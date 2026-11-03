@@ -246,7 +246,9 @@ local function init()
 	outputFieldScroll:SetContent(outputField)
 	
 	-- Modern RIFT key event. Textfield.Change also catches pastes and programmatic edits.
-	inputField:EventAttach(Event.UI.Input.Key.Down, function(_, key)
+	-- Frame events pass (frame, eventHandle, key); tolerate older two-arg mocks.
+	inputField:EventAttach(Event.UI.Input.Key.Down, function(_, eventOrKey, extraKey)
+		local key = extraKey or eventOrKey
 		local insert
 		if key == "\r" or key == "return" or key == "enter" then insert = "\n"
 		elseif key == "\t" or key == "tab" then insert = "  " end

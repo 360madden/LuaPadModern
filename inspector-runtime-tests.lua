@@ -92,7 +92,7 @@ Library = { LibSimpleWidgets = {
   SetBorder = function(view, ...) view._border = { ... } end,
 }}
 Inspect = { Addon = { Detail = function(name)
-  return { toc = { Version = name == "Inspector" and "1.9.0-preview5" or name == "LuaPad" and "2.0.0-preview14" or "?" } }
+  return { toc = { Version = name == "Inspector" and "1.9.0-preview5" or name == "LuaPad" and "2.0.0-preview15" or "?" } }
 end }}
 local registered = {}
 Command = {
@@ -355,6 +355,22 @@ check("LuaPad empty-code guidance", lpOutput._text:find("Please enter some Lua c
 -- Snippet cards should keep a consistent selected state through Save, Load and Clear.
 local slot1 = frames.LuaPadSnippetButton1
 local editor = frames.LuaPadInputField
+editor:SetText("ab")
+editor:SetCursor(1)
+editor._events[Event.UI.Input.Key.Down](editor, Event.UI.Input.Key.Down, "tab")
+check("RIFT three-argument Tab event inserts spaces", editor._text == "a  b" and editor:GetCursor() == 3)
+editor:SetText("ab")
+editor:SetCursor(1)
+editor._events[Event.UI.Input.Key.Down](editor, Event.UI.Input.Key.Down, "return")
+check("RIFT three-argument Return event inserts newline", editor._text == "a\nb" and editor:GetCursor() == 2)
+editor:SetText("ab")
+editor:SetCursor(1)
+editor._events[Event.UI.Input.Key.Down](editor, "tab")
+check("two-argument key event stays compatible", editor._text == "a  b" and editor:GetCursor() == 3)
+editor:SetText("ab")
+editor:SetCursor(1)
+editor._events[Event.UI.Input.Key.Down](editor, Event.UI.Input.Key.Down, "q")
+check("normal key event leaves native typing intact", editor._text == "ab" and editor:GetCursor() == 1)
 slot1:Fire("left-click")
 local selectedStyle = { table.unpack(slot1._bg) }
 check("snippet slot visually selected", selectedStyle[4] == 1)
