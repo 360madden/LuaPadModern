@@ -92,7 +92,7 @@ Library = { LibSimpleWidgets = {
   SetBorder = function(view, ...) view._border = { ... } end,
 }}
 Inspect = { Addon = { Detail = function(name)
-  return { toc = { Version = name == "Inspector" and "1.9.0-preview5" or name == "LuaPad" and "2.0.0-preview13" or "?" } }
+  return { toc = { Version = name == "Inspector" and "1.9.0-preview5" or name == "LuaPad" and "2.0.0-preview14" or "?" } }
 end }}
 local registered = {}
 Command = {
@@ -330,6 +330,21 @@ check("LuaPad compile errors visible", lpOutput._text:find("Syntax error:") ~= n
 LuaPad.doRun('print("before-error"); error("sample runtime failure")')
 check("LuaPad runtime errors visible", lpOutput._text:find("Runtime error:") ~= nil and lpOutput._text:find("sample runtime failure") ~= nil)
 check("LuaPad pre-error print preserved", lpOutput._text:find("before%-error") ~= nil)
+LuaPad.doRun('error(("line\\n"):rep(4000))')
+check("huge LuaPad error preview bounded", #lpOutput._text <= 12200)
+check("huge LuaPad error frame bounded", lpOutput:GetHeight() <= 6000)
+check("huge LuaPad error shortening disclosed", lpOutput._text:find("Copy Output includes full text", 1, true) ~= nil)
+frames.LuaPadCopyOutputButton:Fire("left-click")
+check("huge LuaPad error full diagnostic copyable", clipboard and #clipboard > #lpOutput._text and clipboard:find("line\nline", 1, true) ~= nil)
+LuaPad.doRun('print(("line\\n"):rep(700)); print("tail")')
+check("multiline LuaPad print frame bounded", lpOutput:GetHeight() <= 6000)
+check("multiline LuaPad print shortening disclosed", lpOutput._text:find("Copy Output includes full text", 1, true) ~= nil)
+frames.LuaPadCopyOutputButton:Fire("left-click")
+check("multiline LuaPad print tail survives clipboard", #clipboard > #lpOutput._text and clipboard:sub(-4) == "tail")
+LuaPad.doRun('error(("X"):rep(12080) .. string.char(226,130,172):rep(10), 0)')
+check("bounded LuaPad error keeps complete UTF8", completeUtf8(lpOutput._text))
+frames.LuaPadCopyOutputButton:Fire("left-click")
+check("bounded LuaPad error copies all UTF8", clipboard:find(string.char(226,130,172):rep(10), 1, true) ~= nil and completeUtf8(clipboard))
 LuaPad.doRun('print("short")')
 check("LuaPad short output resets height", lpOutput:GetHeight() == 150)
 check("LuaPad short output hides scrollbar", not lpScroll.scrollbar:GetVisible())

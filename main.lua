@@ -165,15 +165,32 @@ local function utf8ByteSuffix(value, maxBytes)
 	return value:sub(first)
 end
 
--- Calculate scrollable Text height from both explicit and soft-wrapped lines.
--- Keep the displayed text intact so Copy Output receives exactly what ran.
+-- Keep the full diagnostic available for clipboard while bounding the widget
+-- rendering cost. Runtime errors can contain thousands of newline characters.
+local lastOutput = ""
+local MAX_RENDER_BYTES, MAX_RENDER_NEWLINES = 12100, 300
 local function setOutput(message, resetScroll)
 	if not outputField then return end
 	if resetScroll then outputFieldScroll.offset = 0 end
-	local value = tostring(message or "")
-	outputField:SetText(value)
+	lastOutput = tostring(message or "")
+	local rendered = utf8BytePrefix(lastOutput, MAX_RENDER_BYTES)
+	local shortened = #rendered < #lastOutput
+	local newlineCount, startAt = 0, 1
+	while true do
+		local lineEnd = rendered:find("\n", startAt, true)
+		if not lineEnd then break end
+		newlineCount = newlineCount + 1
+		if newlineCount >= MAX_RENDER_NEWLINES and lineEnd < #rendered then
+			rendered = rendered:sub(1, lineEnd)
+			shortened = true
+			break
+		end
+		startAt = lineEnd + 1
+	end
+	if shortened then rendered = rendered .. "\n[Display shortened; Copy Output includes full text.]" end
+	outputField:SetText(rendered)
 	local visualLines = 0
-	for line in (value .. "\n"):gmatch("(.-)\n") do
+	for line in (rendered .. "\n"):gmatch("(.-)\n") do
 		visualLines = visualLines + math.max(1, math.ceil(#line / 70))
 	end
 	outputField:SetHeight(math.max(150, visualLines * 17 + 10))
@@ -266,7 +283,7 @@ local function init()
 
 	-- RIFT provides a native clipboard command. Copy the displayed output in one click.
 	function copyOutputButton.Event:LeftPress()
-		local content = outputField and outputField:GetText() or ""
+		local content = lastOutput
 		content = tostring(content or "")
 		if content == "" then
 			print("LuaPad: Nothing in the output pane to copy.")
@@ -376,7 +393,7 @@ function LuaPad.doRun(obj)
 	end)
 	print = origPrint
 	if not retOK then
-		local previous = outputField:GetText() or ""
+		local previous = lastOutput
 		setOutput(previous .. "\nRuntime error: " .. tostring(runtimeError))
 	end
 	isRunning = false
@@ -527,7 +544,7 @@ function LuaPad.print(...)
 	if isRunning then
 		local parts = {}
 		for i = 1, select("#", ...) do parts[i] = tostring(select(i, ...)) end
-		local previous = outputField:GetText() or ""
+		local previous = lastOutput
 		local line = table.concat(parts, "\t")
 		local combined = previous == "" and line or previous .. "\n" .. line
 		if #combined > 12000 then combined = utf8ByteSuffix(combined, 12000) end
