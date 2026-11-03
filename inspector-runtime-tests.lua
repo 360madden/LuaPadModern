@@ -92,7 +92,7 @@ Library = { LibSimpleWidgets = {
   SetBorder = function(view, ...) view._border = { ... } end,
 }}
 Inspect = { Addon = { Detail = function(name)
-  return { toc = { Version = name == "Inspector" and "1.9.0-preview3" or name == "LuaPad" and "2.0.0-preview10" or "?" } }
+  return { toc = { Version = name == "Inspector" and "1.9.0-preview4" or name == "LuaPad" and "2.0.0-preview11" or "?" } }
 end }}
 local registered = {}
 Command = {
@@ -112,8 +112,8 @@ local slider = frames.InspectorSlider
 local inspect = frames.InspectorInspectButton
 local copy = frames.InspectorCopyButton
 local window = frames.InspectorTextWindow
-check("startup message", table.concat(messages, "\n"):find("Inspector v1.9.0%-preview3") ~= nil)
-check("version from TOC", window._title == "Inspector v1.9.0-preview3")
+check("startup message", table.concat(messages, "\n"):find("Inspector v1.9.0%-preview4") ~= nil)
+check("version from TOC", window._title == "Inspector v1.9.0-preview4")
 check("slash /ti", registered.ti and #registered.ti == 1)
 check("scroll view content", frames.InspectorOutputScroll.content == output)
 check("results read-only Text", output._kind == "Text")
@@ -193,7 +193,14 @@ check("blank expression guidance", output._text:find("Enter a Lua expression") ~
 Inspector.doInspection("Inspect.", 1)
 check("incomplete expression guidance", output._text:find("one complete Lua expression") ~= nil)
 Inspector.doInspection("Inspect; print(1)", 1)
-check("semicolon expression refused", output._text:find("one complete Lua expression") ~= nil)
+check("separate statements rejected by Lua compiler", output._text:find("Syntax error:", 1, true) ~= nil)
+Inspector.doInspection('"semi;colon"', 1)
+check("quoted semicolon allowed", output._text:find("semi;colon", 1, true) ~= nil)
+Inspector.doInspection("(function() local n=1; return n+2 end)()", 1)
+check("nested function semicolon allowed", output._text:find(" = 3", 1, true) ~= nil)
+InspectorFixtureSemicolonFlag = false
+Inspector.doInspection("1; InspectorFixtureSemicolonFlag = true", 1)
+check("top level statements cannot execute", InspectorFixtureSemicolonFlag == false and output._text:find("Syntax error:", 1, true) ~= nil)
 Inspector.doInspection(("x"):rep(401), 1)
 check("overlong expression refused", output._text:find("one complete Lua expression") ~= nil)
 Inspector.doInspection("1 + 1", 1)

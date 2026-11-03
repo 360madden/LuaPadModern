@@ -343,8 +343,10 @@ function Inspector.doInspection(expression, depth)
     displayOutput("Enter a Lua expression to inspect.")
     return
   end
-  if #expression > 400 or expression:find("[\r\n;]") or expression:match("%.%s*$") then
-    displayOutput("Enter one complete Lua expression (max 400 characters, no semicolons).")
+  -- Compile as a single return expression; Lua itself rejects extra statements.
+  -- Semicolons are legal inside quoted strings and nested function expressions.
+  if #expression > 400 or expression:find("[\r\n]") or expression:match("%.%s*$") then
+    displayOutput("Enter one complete Lua expression (max 400 characters, no newlines).")
     return
   end
   local loader = type(loadstring) == "function" and loadstring or load
