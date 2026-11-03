@@ -92,7 +92,7 @@ Library = { LibSimpleWidgets = {
   SetBorder = function(view, ...) view._border = { ... } end,
 }}
 Inspect = { Addon = { Detail = function(name)
-  return { toc = { Version = name == "Inspector" and "1.9.0-preview5" or name == "LuaPad" and "2.0.0-preview12" or "?" } }
+  return { toc = { Version = name == "Inspector" and "1.9.0-preview5" or name == "LuaPad" and "2.0.0-preview13" or "?" } }
 end }}
 local registered = {}
 Command = {
@@ -318,6 +318,8 @@ check("LuaPad output height accounts for wrapped text", lpOutput:GetHeight() > 1
 check("LuaPad long output scrolls", lpScroll:GetMaxOffset() > 0)
 frames.LuaPadCopyOutputButton:Fire("left-click")
 check("LuaPad full wrapped output copied", clipboard == lpOutput._text and #clipboard == 1500)
+LuaPad.doRun('print(string.char(226,130,172):rep(5000) .. "X")')
+check("LuaPad 12000-byte tail keeps complete UTF8", completeUtf8(lpOutput._text))
 lpScroll.offset = 175
 frames.LuaPadHelpButton:Fire("left-click")
 check("LuaPad help output visible", lpOutput._text:find("/lp or /luapad") ~= nil)
@@ -370,6 +372,9 @@ check("snippet release outside clears pressed state", slot2._bg[1] == selectedSt
 LuaPad_Snippets[1] = ("LONG"):rep(12)
 fillSnippetButtons()
 check("long snippet previews stay within card width", #slot1._text <= 20)
+LuaPad_Snippets[1] = string.char(226,130,172):rep(6)
+fillSnippetButtons()
+check("snippet caption keeps complete UTF8", completeUtf8(slot1._text))
 -- A nested Run must not overwrite the process-wide print function or discard
 -- the outer script output; rejecting reentry must leave the outer run usable.
 local printBeforeNestedRun = print

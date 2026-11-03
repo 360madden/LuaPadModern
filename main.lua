@@ -137,6 +137,34 @@ local function currentVersion()
 	return "unknown"
 end
 
+-- RIFT's Lua 5.1 string indices are bytes, not UTF-8 characters. Trim
+-- preview text only at complete codepoint boundaries.
+local function utf8BytePrefix(value, maxBytes)
+	if #value <= maxBytes then return value end
+	local start = maxBytes
+	while start > 0 do
+		local byte = value:byte(start)
+		if byte < 128 or byte >= 192 then
+			local width = byte < 128 and 1 or byte < 224 and 2 or byte < 240 and 3 or byte < 248 and 4 or 1
+			if start + width - 1 > maxBytes then return value:sub(1, start - 1) end
+			break
+		end
+		start = start - 1
+	end
+	return value:sub(1, maxBytes)
+end
+
+local function utf8ByteSuffix(value, maxBytes)
+	if #value <= maxBytes then return value end
+	local first = #value - maxBytes + 1
+	while first <= #value do
+		local byte = value:byte(first)
+		if byte < 128 or byte >= 192 then break end
+		first = first + 1
+	end
+	return value:sub(first)
+end
+
 -- Calculate scrollable Text height from both explicit and soft-wrapped lines.
 -- Keep the displayed text intact so Copy Output receives exactly what ran.
 local function setOutput(message, resetScroll)
@@ -426,7 +454,7 @@ function fillSnippetButtons()
 		if btn then
 			if LuaPad_Snippets[i] then
 				local preview = tostring(LuaPad_Snippets[i]):match("[^\r\n]*") or ""
-				if #preview > 17 then preview = preview:sub(1, 14) .. "..." end
+				if #preview > 17 then preview = utf8BytePrefix(preview, 14) .. "..." end
 				btn:SetText(preview == "" and ("Slot " .. i .. " (empty)") or (i .. ": " .. preview))
 			else
 				btn:SetText("Slot " .. i .. " (empty)")
@@ -502,7 +530,7 @@ function LuaPad.print(...)
 		local previous = outputField:GetText() or ""
 		local line = table.concat(parts, "\t")
 		local combined = previous == "" and line or previous .. "\n" .. line
-		if #combined > 12000 then combined = combined:sub(-12000) end
+		if #combined > 12000 then combined = utf8ByteSuffix(combined, 12000) end
 		setOutput(combined)
 	elseif type(origPrint) == "function" then
 		origPrint(...)
