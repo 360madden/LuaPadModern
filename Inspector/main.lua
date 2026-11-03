@@ -24,6 +24,8 @@ local context = UI.CreateContext("InspectorContext")
 local textWindow = Library.LibSimpleWidgets.Window("InspectorTextWindow", context)
 local helpWindow = Library.LibSimpleWidgets.Window("InspectorHelpWindow", context)
 
+local reportButtonError = nil
+
 -- Match LuaPad's controls: one pointer host, a two-tone border, hover and press feedback.
 local function inspectorButton(name, parent)
   local host = UI.CreateFrame("Frame", name, parent)
@@ -76,7 +78,12 @@ local function inspectorButton(name, parent)
   attach(mouse.Left and mouse.Left.Click, function()
     if result.Event.LeftPress then
       local ok, err = pcall(result.Event.LeftPress, result.Event)
-      if not ok then print("Inspector button " .. name .. ": " .. tostring(err)) end
+      if not ok then
+        local message = "Inspector button " .. name .. ": " .. tostring(err)
+        print(message)
+        -- Let users copy UI failures, not only inspect-expression failures.
+        if reportButtonError then pcall(reportButtonError, message) end
+      end
     end
   end, " click")
   function result:SetText(value) caption:SetText(tostring(value or "")) end
@@ -129,6 +136,8 @@ local function displayOutput(message)
   outputScroll:ContentResized()
   textWindow:SetVisible(true)
 end
+
+reportButtonError = function(message) displayOutput(message) end
 
 local function paintSection(label)
   label:SetFontSize(12)
@@ -211,7 +220,9 @@ local function init()
     x = x + item[3] + 12
   end
   function inspectButton.Event:LeftPress()
-    Inspector.doInspection(inputField:GetText(), tonumber(depthText:GetText()))
+    -- Read the actual slider number. RIFT Text:GetText() returns (text, htmlFlag):
+    -- passing both results to tonumber() makes the boolean an invalid base.
+    Inspector.doInspection(inputField:GetText(), depthSlider:GetPosition())
   end
   function helpButton.Event:LeftPress() helpWindow:SetVisible(true) end
   function closeButton.Event:LeftPress()

@@ -28,7 +28,7 @@ const inspector = read("Inspector/main.lua");
 const widgets = read("LibSimpleWidgets/uicreateframe.lua");
 const scroll = read("LibSimpleWidgets/scrollview.lua");
 const window = read("LibSimpleWidgets/window.lua");
-check("LuaPad preview version", /Version\s*=\s*"2\.0\.0-preview4"/.test(read("RiftAddon.toc")));
+check("LuaPad preview version", /Version\s*=\s*"2\.0\.0-preview5"/.test(read("RiftAddon.toc")));
 check("Direct widget construction", main.includes("Library.LibSimpleWidgets.Window") && main.includes("Library.LibSimpleWidgets.ScrollView") && inspector.includes("Library.LibSimpleWidgets.Window"));
 check("No global UI.CreateFrame override", !/UI\.CreateFrame\s*=/.test(widgets));
 check("No legacy RiftButton constructors", ![main, inspector].some(x => /UI\.CreateFrame\("RiftButton"/.test(x)));
@@ -42,7 +42,7 @@ check("Metadata-driven title", main.includes("Inspect.Addon.Detail") && main.inc
 check("Chat startup confirmation", main.includes('READY - type /lp to open') && main.includes('Loaded with UI errors'));
 check("Unified 7-button toolbar", main.includes('{ copyOutputButton, "Copy Output", 112 }') && main.includes("toolbarX = toolbarX + width + 5") && main.includes('toolbarX, 48'));
 check("Section labels aligned", main.includes('label3:SetPoint("TOPLEFT", luaPadWindow, "TOPLEFT", 554, 48)') && (main.match(/SetFontColor\(0\.73,0\.88,0\.92,1\)/g) || []).length === 3);
-check("Inspector version source of truth", /Version\s*=\s*"1\.9\.0-preview1"/.test(read("Inspector/RiftAddon.toc")) && inspector.includes('detail.toc.Version') && inspector.includes('textWindow:SetTitle("Inspector v" .. currentVersion())'));
+check("Inspector version source of truth", /Version\s*=\s*"1\.9\.0-preview2"/.test(read("Inspector/RiftAddon.toc")) && inspector.includes('detail.toc.Version') && inspector.includes('textWindow:SetTitle("Inspector v" .. currentVersion())'));
 check("Inspector startup confirmation", inspector.includes('READY - type /ti to open'));
 check("Inspector scrollable read-only results", inspector.includes('Library.LibSimpleWidgets.ScrollView("InspectorOutputScroll"') && inspector.includes('outputScroll:SetContent(outputText)') && inspector.includes('local lastOutput = ""'));
 check("Inspector clipboard API", inspector.includes('pcall(Command.CopyToClipboard, lastOutput)'));
@@ -51,6 +51,9 @@ check("Inspector direct 1 to 5 depth", inspector.includes('depthSlider:SetRange(
 check("Inspector true-cycle tracking", inspector.includes('visiting[value] = true') && inspector.includes('visiting[value] = nil') && !inspector.includes('temporaryTableDetails[tostring(obj)]'));
 check("Inspector bounded sorted traversal", inspector.includes('local MAX_NODES, MAX_CHARS = 300, 12000') && inspector.includes('table.sort(keys, function(a, b)'));
 check("Inspector errors always visible", inspector.includes('displayOutput("Syntax error: "') && inspector.includes('displayOutput("Inspection error: "') && inspector.includes('displayOutput("Table traversal error: "'));
+check("Inspector button uses numeric slider position", inspector.includes("Inspector.doInspection(inputField:GetText(), depthSlider:GetPosition())") && !inspector.includes("tonumber(depthText:GetText())"));
+check("Inspector button handler errors copyable", inspector.includes("if reportButtonError then pcall(reportButtonError, message) end") && inspector.includes("reportButtonError = function(message) displayOutput(message) end"));
+check("Inspector runtime harness present", fs.existsSync(path.join(root, "inspector-runtime-tests.lua")));
 check("Inspector aligned modern actions", inspector.includes('item[1]:SetPoint("TOPLEFT", textWindow, "TOPLEFT", x, 544)') && inspector.includes('name .. "Edge" .. i'));
 check("Guarded installer exists", fs.existsSync(path.join(root,"install-preview.ps1")));
 process.stdout.write("\n" + (failures ? failures + " failed" : "All structural checks passed") + "\n");
