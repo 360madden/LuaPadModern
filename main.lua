@@ -198,55 +198,27 @@ local function init()
 		inputField:SetHeight(math.max(16 * (newlineCount + 1), 292))
 	end, "LuaPad editor changed")	
 	
-	loadButton:SetText("Load")
-	loadButton:SetPoint("TOPLEFT", luaPadWindow, "TOPLEFT", 284, 48)	
-	loadButton:SetWidth(80)
+	-- Register actions; their captions, dimensions and placement are centralized below.
 	function loadButton.Event:LeftPress()
 		loadSnippet()
-	end	
-	loadButton:SetLayer(2)
-	saveButton:SetText("Save")
-	saveButton:SetPoint("TOPLEFT", luaPadWindow, "TOPLEFT", 200, 48)	
-	saveButton:SetWidth(80)
+	end
 	function saveButton.Event:LeftPress()
 		saveSnippet()
-	end	
-	saveButton:SetLayer(2)
-	delButton:SetText("Clear")
-	delButton:SetPoint("TOPLEFT", luaPadWindow, "TOPLEFT", 368, 48)	
-	delButton:SetWidth(80)
+	end
 	function delButton.Event:LeftPress()
 		clearSnippet()
-	end		
-	delButton:SetLayer(2)
-	
-	runButton:SetText("Run")
-	runButton:SetWidth(80)
-	runButton:SetPoint("TOPLEFT", luaPadWindow, "TOPLEFT", 32, 48)	
+	end
 	function runButton.Event:LeftPress()
 		LuaPad.doRun(inputField:GetText())
-	end	
-	
-	inspectButton:SetText("Inspect")
-	inspectButton:SetWidth(80)
-	inspectButton:SetPoint("TOPLEFT", luaPadWindow, "TOPLEFT", 116, 48)	
+	end
 	function inspectButton.Event:LeftPress()
 		Inspector.showInspectionWindow()
-	end		
-
-	helpButton:SetText("Help")
-	helpButton:SetWidth(80)
-	helpButton:SetPoint("TOPLEFT", luaPadWindow, "TOPLEFT", 452, 48)	
+	end
 	function helpButton.Event:LeftPress()
 		outputField:SetText("LuaPad v" .. currentVersion() .. "\n/lp or /luapad: show editor\nRun: compile and execute code\nInspect: open object inspector\nSelect a snippet slot, then Save or Load.\nClear empties the selected snippet slot.\nSyntax and runtime errors appear here.\nCopy Output: copies the output text to the Windows clipboard.\nStart with: print(Inspect and type(Inspect))")
-	end	
-	
+	end
 
 	-- RIFT provides a native clipboard command. Copy the displayed output in one click.
-	copyOutputButton:SetText("Copy Output")
-	copyOutputButton:SetWidth(122)
-	copyOutputButton:SetPoint("TOPLEFT", luaPadWindow, "TOPLEFT", 410, 570)
-	copyOutputButton:SetLayer(2)
 	function copyOutputButton.Event:LeftPress()
 		local content = outputField and outputField:GetText() or ""
 		content = tostring(content or "")
@@ -266,6 +238,27 @@ local function init()
 		end
 	end
 
+	-- All seven actions share one 500px-wide toolbar, exactly aligned to the editor.
+	-- The fixed gap and widths keep Copy Output in the same visual language.
+	local toolbar = {
+		{ runButton, "Run", 58 },
+		{ inspectButton, "Inspect", 68 },
+		{ saveButton, "Save", 58 },
+		{ loadButton, "Load", 58 },
+		{ delButton, "Clear", 58 },
+		{ helpButton, "Help", 58 },
+		{ copyOutputButton, "Copy Output", 112 },
+	}
+	local toolbarX = 32
+	for _, item in ipairs(toolbar) do
+		local control, caption, width = item[1], item[2], item[3]
+		control:SetText(caption)
+		control:SetWidth(width)
+		control:SetPoint("TOPLEFT", luaPadWindow, "TOPLEFT", toolbarX, 48)
+		control:SetLayer(2)
+		toolbarX = toolbarX + width + 5
+	end
+
 	closeButton:SetTexture("LuaPad", "close.png")
 	closeButton:SetPoint("TOPRIGHT", luaPadWindow, "TOPRIGHT", -8, 16)	
 	closeButton:SetMouseMasking("full")
@@ -276,15 +269,18 @@ local function init()
 	
 	label1:SetPoint("TOPLEFT", luaPadWindow, "TOPLEFT", 30, 86)	
 	label1:SetText("Code Editor")
-	label1:SetFontColor(1,1,1,0.6)	
+	label1:SetFontSize(12)
+	label1:SetFontColor(0.73,0.88,0.92,1)
 	
 	label2:SetPoint("TOPLEFT", luaPadWindow, "TOPLEFT", 30, 400)	
 	label2:SetText("Output")
-	label2:SetFontColor(1,1,1,0.6)		
+	label2:SetFontSize(12)
+	label2:SetFontColor(0.73,0.88,0.92,1)
 	
-	label3:SetPoint("TOPRIGHT", luaPadWindow, "TOPRIGHT", -244, 52)	
+	label3:SetPoint("TOPLEFT", luaPadWindow, "TOPLEFT", 554, 48)
 	label3:SetText("Code Snippets")
-	label3:SetFontColor(1,1,1,0.6)	
+	label3:SetFontSize(12)
+	label3:SetFontColor(0.73,0.88,0.92,1)
 	
 end
 
