@@ -1,0 +1,3 @@
+-- LuaPad 2.0: do not replace the global UI.CreateFrame function.
+-- LuaPad and Inspector call Library.LibSimpleWidgets constructors directly.
+-- This avoids changing behavior for unrelated RIFT addons.

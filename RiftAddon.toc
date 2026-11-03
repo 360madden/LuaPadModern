@@ -1,0 +1,44 @@
+Identifier = "LuaPad"
+
+Name = {
+  English = "LuaPad",
+  French = "LuaPad",
+  German = "LuaPad",
+}
+
+NameShort = "LuaPad"
+
+Description = {
+  English = "LuaPad 2.0 preview: modern buttons, script execution diagnostics and object inspection."
+}
+
+Author = "NerfedWar"
+Website = "http://www.nerfedwar.net"
+Version = "2.0.0-preview1"
+
+Email = "nerfed.war@gmail.com"
+
+Environment = "4.4"
+
+Embed = {
+	LibSimpleWidgets = true,
+	Inspector = true,
+}
+
+Dependencies = {
+	Inspector = {"required", "before"},
+	LibSimpleWidgets = {"required", "before"},
+}
+
+SavedVariables = {
+	LuaPad_Snippets = "account"
+}
+
+RunOnStartup = {
+	"main.lua"
+}
+
+-- X-Curse-Packaged-Version: 1.8
+-- X-Curse-Project-Name: LuaPad
+-- X-Curse-Project-ID: luapad
+-- X-Curse-Repository-ID: rift/luapad/mainline

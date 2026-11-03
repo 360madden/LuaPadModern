@@ -1,0 +1,13 @@
+tag 1.8
+1dcd8fca2e9c9c738e4a766d9678ac692b0a7d71
+NerfedWar <nerfed.war@gmail.com>
+2012-07-07 23:39:08 +0200
+
+tagging 1.8
+
+
+--------------------
+
+NerfedWar:
+	- Improved handling of return and tab.
+	Signed-off-by: NerfedWar <nerfed.war@gmail.com>

@@ -1,0 +1,34 @@
+Identifier = "Inspector"
+
+Name = {
+  English = "Inspector",
+  French = "Inspector",
+  German = "Inspector",
+}
+
+NameShort = "Inspector"
+
+Description = {
+  English = "Inspector provides a quick way to inspect the contents of any LUA variable/table/function."
+}
+
+Author = "NerfedWar"
+Website = "http://www.nerfedwar.net"
+Version = "1.8"
+
+Email = "nerfed.war@gmail.com"
+
+Environment = "4.4"
+
+Dependencies = {
+	LibSimpleWidgets = {"required", "before"},
+}
+
+RunOnStartup = {
+	"main.lua"
+}
+
+-- X-Curse-Packaged-Version: 1.8
+-- X-Curse-Project-Name: LuaPad
+-- X-Curse-Project-ID: luapad
+-- X-Curse-Repository-ID: rift/luapad/mainline
