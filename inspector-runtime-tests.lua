@@ -36,6 +36,10 @@ local function frame(kind, name, parent)
   function obj:SetAlpha(value) self._alpha = value end
   function obj:GetCursor() return self._cursor or #self._text end
   function obj:SetCursor(value) self._cursor = value end
+  function obj:GetSelection() return self._selectionBegin, self._selectionEnd end
+  function obj:SetSelection(beginPos, endPos)
+    self._selectionBegin, self._selectionEnd = beginPos, endPos
+  end
   function obj:SetPoint(...) self._point = { ... } end
   function obj:SetAllPoints(other) self._allPoints = other end
   function obj:SetMouseMasking(value) self._mask = value end
@@ -92,7 +96,7 @@ Library = { LibSimpleWidgets = {
   SetBorder = function(view, ...) view._border = { ... } end,
 }}
 Inspect = { Addon = { Detail = function(name)
-  return { toc = { Version = name == "Inspector" and "1.9.0-preview5" or name == "LuaPad" and "2.0.0-preview15" or "?" } }
+  return { toc = { Version = name == "Inspector" and "1.9.0-preview5" or name == "LuaPad" and "2.0.0-preview16" or "?" } }
 end }}
 local registered = {}
 Command = {
@@ -371,6 +375,18 @@ editor:SetText("ab")
 editor:SetCursor(1)
 editor._events[Event.UI.Input.Key.Down](editor, Event.UI.Input.Key.Down, "q")
 check("normal key event leaves native typing intact", editor._text == "ab" and editor:GetCursor() == 1)
+editor:SetText("abcd")
+editor:SetCursor(3)
+editor:SetSelection(1, 3)
+editor._events[Event.UI.Input.Key.Down](editor, Event.UI.Input.Key.Down, "tab")
+check("Tab replaces highlighted text", editor._text == "a  d" and editor:GetCursor() == 3)
+check("Tab clears highlighted selection", editor:GetSelection() == nil)
+editor:SetText("abcd")
+editor:SetCursor(3)
+editor:SetSelection(1, 3)
+editor._events[Event.UI.Input.Key.Down](editor, Event.UI.Input.Key.Down, "return")
+check("Enter replaces highlighted text", editor._text == "a\nd" and editor:GetCursor() == 2)
+check("Enter clears highlighted selection", editor:GetSelection() == nil)
 slot1:Fire("left-click")
 local selectedStyle = { table.unpack(slot1._bg) }
 check("snippet slot visually selected", selectedStyle[4] == 1)

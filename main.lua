@@ -254,9 +254,20 @@ local function init()
 		elseif key == "\t" or key == "tab" then insert = "  " end
 		if not insert then return end
 		local txt = inputField:GetText() or ""
-		local pos = inputField:GetCursor() or #txt
-		inputField:SetText(txt:sub(1, pos) .. insert .. txt:sub(pos + 1))
-		inputField:SetCursor(pos + #insert)
+		local fromPos = inputField:GetCursor() or #txt
+		local toPos = fromPos
+		-- A selection must be replaced, rather than inserting at its trailing cursor.
+		-- RIFT expresses selection bounds in the same zero-based units as GetCursor.
+		if type(inputField.GetSelection) == "function" then
+			local beginPos, endPos = inputField:GetSelection()
+			if type(beginPos) == "number" and type(endPos) == "number"
+				and beginPos >= 0 and beginPos < endPos and endPos <= #txt then
+				fromPos, toPos = beginPos, endPos
+			end
+		end
+		inputField:SetText(txt:sub(1, fromPos) .. insert .. txt:sub(toPos + 1))
+		if type(inputField.SetSelection) == "function" then inputField:SetSelection() end
+		inputField:SetCursor(fromPos + #insert)
 	end, "LuaPad editor keydown")
 	inputField:EventAttach(Event.UI.Textfield.Change, function()
 		local _, newlineCount = (inputField:GetText() or ""):gsub("\n", "\n")
