@@ -122,13 +122,32 @@ local function currentVersion()
   return "unknown"
 end
 
--- Text is read-only; the scroll view allows inspection without changing the output.
--- Keep the entire bounded result for Copy Output, independent of visible scroll offset.
+-- Text is read-only. API/runtime errors can be arbitrarily long even when
+-- the inspected expression is short, so bound only the rendered preview.
+-- Copy Output always retains the complete diagnostic in lastOutput.
+local MAX_RENDER_CHARS, MAX_RENDER_NEWLINES = 12100, 300
 local function displayOutput(message)
   lastOutput = tostring(message or "")
-  outputText:SetText(lastOutput)
+  local rendered = lastOutput:sub(1, MAX_RENDER_CHARS)
+  local shortened = #rendered < #lastOutput
+  local newlines, startAt = 0, 1
+  while true do
+    local lineEnd = rendered:find("\n", startAt, true)
+    if not lineEnd then break end
+    newlines = newlines + 1
+    if newlines >= MAX_RENDER_NEWLINES and lineEnd < #rendered then
+      rendered = rendered:sub(1, lineEnd)
+      shortened = true
+      break
+    end
+    startAt = lineEnd + 1
+  end
+  if shortened then
+    rendered = rendered .. "\n[Display shortened; Copy Output includes full text.]"
+  end
+  outputText:SetText(rendered)
   local wrappedLines = 0
-  for line in (lastOutput .. "\n"):gmatch("(.-)\n") do
+  for line in (rendered .. "\n"):gmatch("(.-)\n") do
     wrappedLines = wrappedLines + math.max(1, math.ceil(#line / 105))
   end
   outputText:SetHeight(math.max(346, wrappedLines * 17 + 8))

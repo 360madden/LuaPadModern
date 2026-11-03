@@ -1,8 +1,9 @@
-# LuaPad 2.0 preview 8 (physical-PC RIFT)
+# LuaPad 2.0 preview 9 (physical-PC RIFT)
 
 Source: copied from installed LuaPad 1.8 on 2026-11-03. Preview 1 was installed to physical RIFT AddOns at approximately 14:58 ET on 2026-11-03, after the game exited normally. Original addon and three account SavedVariables files were backed up. See DEPLOYMENT-2026-11-03.md. Preview 2 and Preview 3 are incremental two-file updates hot-copied into the active addon while RIFT remains open; `/reloadui` is needed to load updated Lua code.
 
 ## Changes
+- Preview 9 / Inspector 1.9.0-preview3: reproduces and fixes uncontrolled rendering of huge API/runtime errors. Inspector shows at most 12,100 bytes and 300 newline breaks, with an explicit truncation notice; **Copy Output retains the full diagnostic**. An existing table-traversal truncation marker is preserved. Reproduced red test, then passed all 94 combined runtime assertions. See `DEPLOYMENT-INSPECTOR-RENDER-PREVIEW9-2026-11-03.md`.
 - Preview 8: fixed a reproducible snippet selection inconsistency (Load replaced teal selection with translucent green). All sixteen snippet cards now share hover/pressed/release states with the main toolbar, use larger 10-point captions and bounded previews. Runtime harness covers Save/Load/Clear, selection persistence and pointer states (89 assertions). See `DEPLOYMENT-SNIPPETS-PREVIEW8-2026-11-03.md`.
 - Preview 7: fixes LuaPad's output-pane clipping for long printed lines and multiline Help/errors by enabling explicit word wrapping and estimating displayed line height. It resets Help scroll to the top and preserves exact Copy Output text. The combined LuaPad + Inspector real-ScrollView runtime suite now passes 75 assertions. See `DEPLOYMENT-OUTPUT-PREVIEW7-2026-11-03.md`.
 - Preview 6: fixed exact-fit scrollbar visibility, negative scroll offsets, zero-height division and scrollbar toggling in embedded LibSimpleWidgets. Runtime harness now executes the real ScrollView implementation, including wheel and mouse drag tests; 58 assertions passed. This shared-library change benefits both LuaPad editor and Inspector output.
@@ -28,6 +29,7 @@ Source: copied from installed LuaPad 1.8 on 2026-11-03. Preview 1 was installed 
 - Preview 3: the Code Snippets heading now sits to the right of the toolbar without collision, and Code Editor / Output / Code Snippets share pale-cyan 12px labels.
 
 ## Current limitations / next gates
+- Preview 9 oversized-error rendering is validated in a RIFT widget mock, not yet in the physical RIFT client. Joey must manually `/reloadui` and accept the result/clipboard behavior.
 - Preview 8 snippet state and font-size changes pass runtime mocks, but actual RIFT hover/depress legibility and selection styling require in-game screenshots after `/reloadui`.
 - Preview 7 output wrapping and 75-case mock regression passed, but actual RIFT text wrapping/scrolling still requires Joey's `/reloadui` and visual acceptance.
 - Preview 6 scroll fixes passed mock execution, but real RIFT wheel/drag behavior still needs screenshot and user interaction acceptance after `/reloadui`.
@@ -42,6 +44,7 @@ Source: copied from installed LuaPad 1.8 on 2026-11-03. Preview 1 was installed 
 - Active-game two-file updates are backed up and hash-checked; new code only loads after `/reloadui`. Avoid reloading UI during critical gameplay.
 
 ## Verified preview packages
+- **Preview 9**: 49/49 structural checks, 94/94 combined runtime assertions and 9/9 Lua syntax parses passed. `LuaPad-2.0.0-preview9.zip` SHA256 `6e40709db750612df90014a4f1d8e63a3ebd336015a808ff08f236627a8416d6`; all 16 entries match source. The guarded 3-file hot-copy succeeded and the Preview 8 originals were backed up. See `DEPLOYMENT-INSPECTOR-RENDER-PREVIEW9-2026-11-03.md`.
 - **Preview 8**: 47/47 structural checks, 89/89 combined runtime mock assertions and 9/9 Lua syntax parses passed. `LuaPad-2.0.0-preview8.zip` SHA256 `07d9c3430c8f9d93803eb5f2863599723dd7599b906847dd5c3d60f9ca38b393`; all 16 archive files match source. Incremental `main.lua` and root TOC hot-copy succeeded with backup and post-copy hash checks. See `DEPLOYMENT-SNIPPETS-PREVIEW8-2026-11-03.md`.
 - **Preview 7**: 44/44 structural checks, 75/75 cross-addon runtime mock assertions and 9/9 Lua syntax parses passed. `LuaPad-2.0.0-preview7.zip` SHA256 `d696387e1d3f41e530459e516c46efd73e9efc0179bbb68475ebfe8e5f60156a`, all 16 archived files matched source. Two-file hot-copy `main.lua` and `RiftAddon.toc` succeeded with SHA256 preflight, backup and postcopy verification. See `DEPLOYMENT-OUTPUT-PREVIEW7-2026-11-03.md`.
 - **Preview 3**: 27/27 structural checks passed; `main.lua` Lua syntax parsed successfully. `LuaPad-2.0.0-preview3.zip` SHA256 `16798ad85bd3124cfb1594d99a0f8defddc4fe1983cf07c31431d76155e4fb52`. All 15 archived files matched source SHA256.
@@ -55,13 +58,14 @@ Source: copied from installed LuaPad 1.8 on 2026-11-03. Preview 1 was installed 
 The full installer remains intended for initial installation with RIFT closed. For the incremental Preview 1 → 2 → 3 updates we used bounded two-file backup-and-hot-copy while RIFT remained running. The optional `install-preview.ps1` was syntax-checked and **executed successfully on 2026-11-03 while RIFT was closed**. It refuses to run while the RIFT process exists, first copies each available `Saved/<account>/SavedVariables/LuaPad.lua` to `backups/LuaPad-SavedVariables-<timestamp>/<account>/`, then moves the original addon to a timestamped backup outside AddOns and copies only addon payload files. Its error handler moves the active AddOns target only after a preview directory was actually created. Do not rerun it while RIFT is active; consult the deployment checkpoint before reinstalling.
 
 ## Manual test gate
-1. Current Preview 8: use the guarded incremental hot-copy receipt (root `RiftAddon.toc` and `main.lua`); do **not** rerun the full installer while RIFT is active.
-2. In RIFT type `/reloadui` (no game exit) to load the updated files. Check the chat initialization line states `[LuaPad v2.0.0-preview8] READY`.
-3. Type `/lp`: the title should read `LuaPad v2.0.0-preview8`. Reopen and verify it stays in sync.
-4. Run `print("LuaPad preview 8 OK")` and confirm the output.
+1. Current Preview 9: use the guarded three-file hot-copy receipt (`Inspector/main.lua`, both TOCs); do **not** rerun the full installer while RIFT is active.
+2. In RIFT type `/reloadui` (no game exit) to load the updated files. Check the chat initialization line states `[LuaPad v2.0.0-preview9] READY`.
+3. Type `/lp`: the title should read `LuaPad v2.0.0-preview9`. Reopen and verify it stays in sync.
+4. Run `print("LuaPad preview 9 OK")` and confirm the output.
 5. Run invalid Lua (e.g. `this is not valid lua !`) and confirm a syntax error; click **Copy Output**, then paste into Notepad or chat and verify the full error text.
 6. Run `error("test")`, click **Copy Output** again, and confirm that the traceback/error pastes faithfully.
-7. Verify the seven top-row buttons align and stay fully readable, Code Snippets heading does not overlap them, and Copy Output no longer floats below the output pane. Test Save/Load on an unused slot, Inspect open/close, hover/depress, and window drag. Report screenshots and any defects; tests are not considered passed by copying files alone.
+7. Type `/ti` and confirm `Inspector v1.9.0-preview3`. Test a moderate multiline error and Copy Output (a very large error was exercised only in the mock suite).
+8. Verify the seven top-row buttons align and stay fully readable, Code Snippets heading does not overlap them, and Copy Output no longer floats below the output pane. Test Save/Load on an unused slot, Inspect open/close, hover/depress, and window drag. Report screenshots and any defects; tests are not considered passed by copying files alone.
 
 ## Rollback
 After exiting RIFT normally, run `powershell.exe -NoProfile -File C:\\work\\LuaPadModern\\restore-original.ps1` in PowerShell to restore the original LuaPad directory. The script is not automatic, checks for a running game, moves the preview to a recoverable backup, and refuses to guess when more than one original backup exists. If necessary, supply `-BackupPath 'C:\\work\\LuaPadModern\\backups\\luapad-before-preview-YYYYMMDD-HHMMSS'`. It does **not** restore account SavedVariables: restore your separate saved-variable backup manually if the test changed it. The rollback script passed PowerShell syntax validation but has not been executed.

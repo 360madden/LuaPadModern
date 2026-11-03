@@ -92,7 +92,7 @@ Library = { LibSimpleWidgets = {
   SetBorder = function(view, ...) view._border = { ... } end,
 }}
 Inspect = { Addon = { Detail = function(name)
-  return { toc = { Version = name == "Inspector" and "1.9.0-preview2" or name == "LuaPad" and "2.0.0-preview8" or "?" } }
+  return { toc = { Version = name == "Inspector" and "1.9.0-preview3" or name == "LuaPad" and "2.0.0-preview9" or "?" } }
 end }}
 local registered = {}
 Command = {
@@ -112,8 +112,8 @@ local slider = frames.InspectorSlider
 local inspect = frames.InspectorInspectButton
 local copy = frames.InspectorCopyButton
 local window = frames.InspectorTextWindow
-check("startup message", table.concat(messages, "\n"):find("Inspector v1.9.0%-preview2") ~= nil)
-check("version from TOC", window._title == "Inspector v1.9.0-preview2")
+check("startup message", table.concat(messages, "\n"):find("Inspector v1.9.0%-preview3") ~= nil)
+check("version from TOC", window._title == "Inspector v1.9.0-preview3")
 check("slash /ti", registered.ti and #registered.ti == 1)
 check("scroll view content", frames.InspectorOutputScroll.content == output)
 check("results read-only Text", output._kind == "Text")
@@ -261,7 +261,16 @@ frames.InspectorHelpCloseButton:Fire("left-click")
 check("Help closes", not frames.InspectorHelpWindow:GetVisible())
 frames.InspectorCloseButton:Fire("left-click")
 check("Inspector closes", not window:GetVisible())
-check("Inspector cases passed", passed >= 55)
+
+-- Oversized runtime errors must never become enormous render frames, but remain fully copyable.
+Inspector.doInspection('error(("line\\n"):rep(8000))', 1)
+check("huge Inspector error is reported", output._text:find("Inspection error:", 1, true) ~= nil)
+check("huge Inspector error preview bounded", #output._text <= 12200)
+check("huge Inspector error frame bounded", output:GetHeight() <= 6000)
+check("huge Inspector error truncation disclosed", output._text:find("Copy Output includes full text", 1, true) ~= nil)
+copy:Fire("left-click")
+check("huge Inspector error copy preserves full diagnostic", clipboard ~= nil and #clipboard > #output._text and clipboard:find("line\nline", 1, true) ~= nil)
+check("Inspector cases passed", passed >= 60)
 
 -- Load LuaPad with the same real ScrollView to test cross-addon integration.
 assert(loadfile("main.lua"))()
