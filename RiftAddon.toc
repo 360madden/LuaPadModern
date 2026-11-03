@@ -9,12 +9,12 @@ Name = {
 NameShort = "LuaPad"
 
 Description = {
-  English = "LuaPad 2.0 preview: script diagnostics with Copy Output, modern buttons and object inspection."
+  English = "LuaPad 2.0 preview: script diagnostics, clipboard output and redesigned Inspector."
 }
 
 Author = "NerfedWar"
 Website = "http://www.nerfedwar.net"
-Version = "2.0.0-preview3"
+Version = "2.0.0-preview4"
 
 Email = "nerfed.war@gmail.com"
 

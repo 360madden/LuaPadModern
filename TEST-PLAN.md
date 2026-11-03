@@ -34,6 +34,20 @@
 | LP-20 | Inspect Code Snippets heading | Clear separation from Help/Copy Output, no overlapping text |
 | LP-21 | Inspect section headings | Code Editor, Output, Code Snippets share consistent size and pale-cyan color |
 
+## Preview 4 Inspector-specific acceptance (after /reloadui)
+- [ ] IP-01: /ti opens centered Inspector with title `Inspector v1.9.0-preview1`; /lp title displays `LuaPad v2.0.0-preview4`.
+- [ ] IP-02: Output pane, input label, depth control, Inspect/Help/Close and Copy Output do not overlap or fall outside 800x600 window.
+- [ ] IP-03: Help fits entirely within 650x430 window; close/reopen works.
+- [ ] IP-04: Depth moves 1,2,3,4,5 from left to right; result expansion corresponds to setting.
+- [ ] IP-05: Inspect `Inspect` at depth 1; scroll long results with wheel and scrollbar.
+- [ ] IP-06: Inspect `Inspect.???`, then Copy Output; paste exact syntax error outside the game.
+- [ ] IP-07: Inspect `error("inspector test")`, then Copy Output; paste runtime error.
+- [ ] IP-08: LuaPad: `InspectorFixture = {first={n=1}}; InspectorFixture.second=InspectorFixture.first`. Inspector: `InspectorFixture` depth 3 shows both first.n and second.n without false [cycle].
+- [ ] IP-09: LuaPad: `InspectorFixture.self=InspectorFixture`. Inspector: same expression depth 3 yields [cycle] for self.
+- [ ] IP-10: Chat after reload prints Inspector and LuaPad exact preview versions once, without initialization errors.
+- [ ] IP-11: Press Copy Output with empty output and inspect blank expression; no addon crash and clear message.
+- [ ] IP-12: UI stays open after errors and game remains playable. This is a manual gate, not statically verified.
+
 ## Evidence / acceptance
 - Retain a screenshot showing version title and controls.
 - Record any Lua errors exactly, including addon and line number.

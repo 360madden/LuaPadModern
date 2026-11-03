@@ -1,8 +1,9 @@
-# LuaPad 2.0 preview 3 (physical-PC RIFT)
+# LuaPad 2.0 preview 4 (physical-PC RIFT)
 
 Source: copied from installed LuaPad 1.8 on 2026-11-03. Preview 1 was installed to physical RIFT AddOns at approximately 14:58 ET on 2026-11-03, after the game exited normally. Original addon and three account SavedVariables files were backed up. See DEPLOYMENT-2026-11-03.md. Preview 2 and Preview 3 are incremental two-file updates hot-copied into the active addon while RIFT remains open; `/reloadui` is needed to load updated Lua code.
 
 ## Changes
+- Preview 4: Inspector v1.9.0-preview1 redesign: read-only scrollable results, Copy Output, aligned consistent buttons, compact help, integer 1–5 slider, source-of-truth version title and startup chat notice. Traversal now distinguishes true cycles from shared table references, sorts bounded keys, guards huge tables and explains invalid expressions. See `DEPLOYMENT-INSPECTOR-PREVIEW1-2026-11-03.md`.
 - Replaced six legacy RiftButton controls with ordinary RRECollector-inspired buttons (hover, pressed offset, cyan/dark palette), aligned in one compact top strip. The layer ordering now explicitly matches RRECollector (fill 0, borders 1, caption 3), with cyan hover labels.
 - Converted snippet selection and close actions from legacy callbacks to EventAttach.
 - Updated Inspector's four controls to the same plain button style.
@@ -23,6 +24,8 @@ Source: copied from installed LuaPad 1.8 on 2026-11-03. Preview 1 was installed 
 - Preview 3: the Code Snippets heading now sits to the right of the toolbar without collision, and Code Editor / Output / Code Snippets share pale-cyan 12px labels.
 
 ## Current limitations / next gates
+- Preview 4 static validation passed 37/37 checks and Inspector Lua syntax. No in-game Inspector widget acceptance is claimed before Joey performs `/reloadui` and tests output/clipboard/help/depth.
+
 - Lua syntax parsed successfully for all 9 .lua source files on 2026-11-03 using luaparse 0.3.1 through npm exec (9/9). Syntax validity does not establish RIFT API/runtime compatibility.
 - Preview 1 UI and Run were observed in physical RIFT on 2026-11-03: Joey provided a screenshot and confirmed corrected print code runs. Joey's Preview 2 screenshot confirms the metadata-driven window title displayed `LuaPad v2.0.0-preview2`, but not yet the clipboard/chat runtime behavior or Preview 3's final layout. Embedded SimpleWindow, RiftTextfield, SimpleScrollView and Inspector dependencies remain.
 - Global print interception is scoped to each Run operation and restored afterward; printing was observed in game. Multi-line prints, long output, and traceback remain acceptance tests.

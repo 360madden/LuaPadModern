@@ -9,12 +9,12 @@ Name = {
 NameShort = "Inspector"
 
 Description = {
-  English = "Inspector provides a quick way to inspect the contents of any LUA variable/table/function."
+  English = "Inspector: scrollable Lua object introspection with bounded traversal and clipboard export."
 }
 
 Author = "NerfedWar"
 Website = "http://www.nerfedwar.net"
-Version = "1.8"
+Version = "1.9.0-preview1"
 
 Email = "nerfed.war@gmail.com"
 
