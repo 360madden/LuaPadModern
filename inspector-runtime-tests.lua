@@ -24,6 +24,10 @@ local function frame(kind, name, parent)
   function obj:SetParent(value) self._parent = value end
   function obj:SetWidth(value) self._width = value end
   function obj:SetHeight(value) self._height = value end
+  function obj:GetHeight() return self._height or 0 end
+  function obj:GetWidth() return self._width or 0 end
+  function obj:GetTop() return self._top or 0 end
+  function obj:GetBackgroundColor() return table.unpack(self._bg or {0,0,0,0}) end
   function obj:SetLayer(value) self._layer = value end
   function obj:SetPoint(...) self._point = { ... } end
   function obj:SetAllPoints(other) self._allPoints = other end
@@ -67,14 +71,16 @@ UI = {
 }
 Event = { UI = {
   Input = { Mouse = {
-    Cursor = { In = "cursor-in", Out = "cursor-out" },
+    Cursor = { In = "cursor-in", Out = "cursor-out", Move = "cursor-move" },
     Left = { Down = "left-down", Up = "left-up", Upoutside = "left-upoutside", Click = "left-click" },
+    Wheel = { Forward = "wheel-forward", Back = "wheel-back" },
   }},
   Slider = { Change = "slider-change" },
+  Layout = { Size = "layout-size" },
 }}
 Library = { LibSimpleWidgets = {
   Window = function(name, parent) return frame("Window", name, parent) end,
-  ScrollView = function(name, parent) return frame("ScrollView", name, parent) end,
+  SetBorder = function(view, ...) view._border = { ... } end,
 }}
 Inspect = { Addon = { Detail = function(name)
   return { toc = { Version = name == "Inspector" and "1.9.0-preview2" or "?" } }
@@ -87,6 +93,7 @@ Command = {
   end },
   CopyToClipboard = function(value) clipboard = value; return true end,
 }
+assert(loadfile("LibSimpleWidgets/scrollview.lua"))()
 assert(loadfile("Inspector/main.lua"))()
 
 local output = frames.InspectorOutputText
@@ -99,10 +106,13 @@ local window = frames.InspectorTextWindow
 check("startup message", table.concat(messages, "\n"):find("Inspector v1.9.0%-preview2") ~= nil)
 check("version from TOC", window._title == "Inspector v1.9.0-preview2")
 check("slash /ti", registered.ti and #registered.ti == 1)
-check("scroll view content", frames.InspectorOutputScroll._content == output)
+check("scroll view content", frames.InspectorOutputScroll.content == output)
 check("results read-only Text", output._kind == "Text")
 check("aligned copy control", copy._width == 120)
 check("empty initial output", output._text == "")
+local scroll = frames.InspectorOutputScroll
+check("no scrollbar when content fits exactly", not scroll.scrollbar:GetVisible())
+check("zero max offset when content fits", scroll:GetMaxOffset() == 0)
 messages = {}
 copy:Fire("left-click")
 check("empty clipboard warning", table.concat(messages, "\n"):find("Nothing to copy") ~= nil)
@@ -147,6 +157,27 @@ check("large table bounded", output._text:find("%[inspection limited to 300 node
 InspectorFixture = { big = ("X"):rep(14000) }
 Inspector.doInspection("InspectorFixture", 3)
 check("long output bounded", output._text:find("%[output truncated at 12000 characters%]") ~= nil)
+check("overflow makes scrollbar visible", scroll.scrollbar:GetVisible())
+check("overflow has positive max offset", scroll:GetMaxOffset() > 0)
+scroll:Fire("wheel-back")
+check("wheel down advances content", scroll.offset > 0)
+scroll:Fire("wheel-forward")
+check("wheel up returns content", scroll.offset == 0)
+local simulatedMouse = { y = 20, Left = true }
+Inspect.Mouse = function() return simulatedMouse end
+scroll.scrollbar._top = 0
+scroll._top = 0
+scroll.scrollbar:Fire("left-down")
+simulatedMouse.y = 160
+scroll.scrollbar:Fire("cursor-move")
+check("scrollbar drag advances content", scroll.offset > 0)
+scroll.scrollbar:Fire("left-up")
+local stoppedAt = scroll.offset
+simulatedMouse.y = 300
+scroll.scrollbar:Fire("cursor-move")
+check("scrollbar drag stops on mouse-up", scroll.offset == stoppedAt)
+Inspect.Mouse = nil
+
 
 Inspector.doInspection("", 1)
 check("blank expression guidance", output._text:find("Enter a Lua expression") ~= nil)
@@ -182,6 +213,16 @@ Command.CopyToClipboard = nativeCopy
 InspectorFixture = { score = 10 }
 Inspector.doInspection("InspectorFixture", 1)
 check("fresh output resets scrolling", frames.InspectorOutputScroll.offset == 0)
+check("short result hides scrollbar", not scroll.scrollbar:GetVisible())
+scroll:SetShowScrollbar(true)
+check("enabling scrollbar respects no-overflow", not scroll.scrollbar:GetVisible())
+local savedHeight = output:GetHeight()
+output:SetHeight(0)
+scroll:ContentResized()
+check("zero-height content has zero offset", scroll:GetMaxOffset() == 0)
+check("zero-height scrollbar position finite", scroll.scrollbar._point[5] == scroll.scrollbar._point[5])
+output:SetHeight(savedHeight)
+scroll:ContentResized()
 check("result pane stays operable", window:GetVisible() == true)
 check("Help text bounded by window", frames.InspectorHelpText._width + frames.InspectorHelpText._point[4] <= frames.InspectorHelpWindow._width and frames.InspectorHelpText._height + frames.InspectorHelpText._point[5] < frames.InspectorHelpWindow._height)
 local fill = frames.InspectorInspectButtonFill
@@ -211,5 +252,5 @@ frames.InspectorHelpCloseButton:Fire("left-click")
 check("Help closes", not frames.InspectorHelpWindow:GetVisible())
 frames.InspectorCloseButton:Fire("left-click")
 check("Inspector closes", not window:GetVisible())
-check("all cases passed", passed >= 43)
+check("all cases passed", passed >= 55)
 originalPrint(string.format("Inspector runtime mock: %d assertions passed", passed))

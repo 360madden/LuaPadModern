@@ -36,7 +36,7 @@ end
 
 local function SetShowScrollbar(self, show)
   self.showScrollbar = show
-  self.scrollbar:SetVisible(show)
+  self.scrollbar:SetVisible(show and self.content ~= nil and self:GetMaxOffset() > 0)
 end
 
 local function GetScrollbarColor(self)
@@ -56,22 +56,23 @@ local function SetScrollbarWidth(self, width)
 end
 
 local function GetMaxOffset(self)
-  return self.content:GetHeight() - self:GetHeight()
+  if not self.content then return 0 end
+  return math.max(0, self.content:GetHeight() - self:GetHeight())
 end
 
 local function GetOffsetForScrollbarY(self, y)
-  return y / self:GetHeight() * self.content:GetHeight()
+  local height = self:GetHeight()
+  if not self.content or height <= 0 then return 0 end
+  return y / height * self.content:GetHeight()
 end
 
 local function ContentResized(self)
-  if self.content:GetHeight() < self:GetHeight() then
+  if self.content:GetHeight() <= self:GetHeight() then
     self.scrollbar:SetVisible(false)
     self.offset = 0
   else
     local maxOffset = self:GetMaxOffset()
-    if self.offset > maxOffset then
-      self.offset = maxOffset
-    end
+    self.offset = math.max(0, math.min(self.offset, maxOffset))
     self.scrollbar:SetHeight(self:GetHeight() / self.content:GetHeight() * self:GetHeight())
     self.scrollbar:SetVisible(self.showScrollbar)
   end
@@ -85,7 +86,11 @@ local function PositionContent(self)
 end
 
 local function PositionScrollbar(self)
-  local scrollbarOffset = self.offset / self.content:GetHeight() * self:GetHeight()
+  local contentHeight = self.content and self.content:GetHeight() or 0
+  local scrollbarOffset = 0
+  if contentHeight > 0 then
+    scrollbarOffset = self.offset / contentHeight * self:GetHeight()
+  end
   self.scrollbar:SetPoint("TOPRIGHT", self, "TOPRIGHT", 0, scrollbarOffset)
 end
 
@@ -94,7 +99,7 @@ local function WheelForward(self)
     return
   end
 
-  if self.content:GetHeight() < self:GetHeight() then
+  if self.content:GetHeight() <= self:GetHeight() then
     return
   end
 
@@ -113,7 +118,7 @@ local function WheelBack(self)
     return
   end
 
-  if self.content:GetHeight() < self:GetHeight() then
+  if self.content:GetHeight() <= self:GetHeight() then
     return
   end
 

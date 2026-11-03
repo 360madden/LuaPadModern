@@ -34,9 +34,13 @@
 | LP-20 | Inspect Code Snippets heading | Clear separation from Help/Copy Output, no overlapping text |
 | LP-21 | Inspect section headings | Code Editor, Output, Code Snippets share consistent size and pale-cyan color |
 
-## Preview 5 Inspector-specific acceptance (after /reloadui)
+## Preview 6 Inspector-specific acceptance (after /reloadui)
+- [ ] IP-13: Empty or exactly viewport-height inspection text does not show a scrollbar.
+- [ ] IP-14: Long output shows a scrollbar and wheel down/up moves content in both directions.
+- [ ] IP-15: Dragging the scrollbar changes position; releasing the mouse stops dragging. Returning to short output resets scroll offset to 0.
+- [ ] IP-16: LuaPad main editor/output scroll areas continue to work after shared LibSimpleWidgets scrollbar patch.
 - [ ] IP-00: Preview 5 fixes the reproduced Inspector button exception at `Inspector/main.lua:214` by reading numeric depth from the slider. Click Inspect several times; check NO more `tonumber` boolean-base errors appear in RIFT chat. Test errors now render in the copyable result pane.
-- [ ] IP-01: /ti opens centered Inspector with title `Inspector v1.9.0-preview2`; /lp title displays `LuaPad v2.0.0-preview5`.
+- [ ] IP-01: /ti opens centered Inspector with title `Inspector v1.9.0-preview2`; /lp title displays `LuaPad v2.0.0-preview6`.
 - [ ] IP-02: Output pane, input label, depth control, Inspect/Help/Close and Copy Output do not overlap or fall outside 800x600 window.
 - [ ] IP-03: Help fits entirely within 650x430 window; close/reopen works.
 - [ ] IP-04: Depth moves 1,2,3,4,5 from left to right; result expansion corresponds to setting.
