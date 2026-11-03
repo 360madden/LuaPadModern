@@ -135,7 +135,22 @@ local function currentVersion()
 	end
 	return "unknown"
 end
-	
+
+-- Calculate scrollable Text height from both explicit and soft-wrapped lines.
+-- Keep the displayed text intact so Copy Output receives exactly what ran.
+local function setOutput(message, resetScroll)
+	if not outputField then return end
+	if resetScroll then outputFieldScroll.offset = 0 end
+	local value = tostring(message or "")
+	outputField:SetText(value)
+	local visualLines = 0
+	for line in (value .. "\n"):gmatch("(.-)\n") do
+		visualLines = visualLines + math.max(1, math.ceil(#line / 70))
+	end
+	outputField:SetHeight(math.max(150, visualLines * 17 + 10))
+	outputFieldScroll:ContentResized()
+end
+
 -- Addon initialisation
 local function init()
 
@@ -179,6 +194,8 @@ local function init()
 	outputFieldScroll:SetPoint("TOPLEFT", luaPadWindow, "TOPLEFT", 32, 418)
 	outputField = UI.CreateFrame("Text", "LuaPadOutputField", outputFieldScroll)
 	outputField:SetBackgroundColor(0,0,0,0.5)
+	outputField:SetFontSize(12)
+	outputField:SetWordwrap(true)
 	outputField:SetHeight(150)
 	outputFieldScroll:SetContent(outputField)
 	
@@ -215,7 +232,7 @@ local function init()
 		Inspector.showInspectionWindow()
 	end
 	function helpButton.Event:LeftPress()
-		outputField:SetText("LuaPad v" .. currentVersion() .. "\n/lp or /luapad: show editor\nRun: compile and execute code\nInspect: open object inspector\nSelect a snippet slot, then Save or Load.\nClear empties the selected snippet slot.\nSyntax and runtime errors appear here.\nCopy Output: copies the output text to the Windows clipboard.\nStart with: print(Inspect and type(Inspect))")
+		setOutput("LuaPad v" .. currentVersion() .. "\n/lp or /luapad: show editor\nRun: compile and execute code\nInspect: open object inspector\nSelect a snippet slot, then Save or Load.\nClear empties the selected snippet slot.\nSyntax and runtime errors appear here.\nCopy Output: copies the output text to the Windows clipboard.\nStart with: print(Inspect and type(Inspect))", true)
 	end
 
 	-- RIFT provides a native clipboard command. Copy the displayed output in one click.
@@ -295,22 +312,22 @@ end
 -- run the code!
 function LuaPad.doRun(obj)
 	if( (obj == nil) or (obj == "") ) then
-		outputField:SetText('Please enter some Lua code and then press run.')
+		setOutput('Please enter some Lua code and then press run.')
 		return
 	end
 	isRunning=true
-	outputField:SetText('')
-	outputField:SetHeight(150)
+	outputFieldScroll.offset = 0
+	setOutput('')
 	
 	local loader = type(loadstring) == "function" and loadstring or load
 	if type(loader) ~= "function" then
-		outputField:SetText("Lua code compiler unavailable in this RIFT environment.")
+		setOutput("Lua code compiler unavailable in this RIFT environment.")
 		isRunning = false
 		return
 	end
 	local compileOK, compiled, compileError = pcall(loader, obj)
 	if not compileOK or not compiled then
-		outputField:SetText("Syntax error: " .. tostring(compileOK and compileError or compiled))
+		setOutput("Syntax error: " .. tostring(compileOK and compileError or compiled))
 		isRunning = false
 		return
 	end
@@ -325,7 +342,7 @@ function LuaPad.doRun(obj)
 	print = origPrint
 	if not retOK then
 		local previous = outputField:GetText() or ""
-		outputField:SetText(previous .. "\nRuntime error: " .. tostring(runtimeError))
+		setOutput(previous .. "\nRuntime error: " .. tostring(runtimeError))
 	end
 	isRunning = false
 end
@@ -456,9 +473,7 @@ function LuaPad.print(...)
 		local line = table.concat(parts, "\t")
 		local combined = previous == "" and line or previous .. "\n" .. line
 		if #combined > 12000 then combined = combined:sub(-12000) end
-		outputField:SetText(combined)
-		local _, count = combined:gsub("\n", "\n")
-		outputField:SetHeight(math.max(16 * (count + 1), 150))
+		setOutput(combined)
 	elseif type(origPrint) == "function" then
 		origPrint(...)
 	end

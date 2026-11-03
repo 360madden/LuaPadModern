@@ -23,12 +23,19 @@ local function frame(kind, name, parent)
   function obj:GetParent() return self._parent end
   function obj:SetParent(value) self._parent = value end
   function obj:SetWidth(value) self._width = value end
-  function obj:SetHeight(value) self._height = value end
+  function obj:SetHeight(value)
+    local previous = self._height
+    self._height = value
+    if previous ~= value and self._events["layout-size"] then self._events["layout-size"]() end
+  end
   function obj:GetHeight() return self._height or 0 end
   function obj:GetWidth() return self._width or 0 end
   function obj:GetTop() return self._top or 0 end
   function obj:GetBackgroundColor() return table.unpack(self._bg or {0,0,0,0}) end
   function obj:SetLayer(value) self._layer = value end
+  function obj:SetAlpha(value) self._alpha = value end
+  function obj:GetCursor() return self._cursor or #self._text end
+  function obj:SetCursor(value) self._cursor = value end
   function obj:SetPoint(...) self._point = { ... } end
   function obj:SetAllPoints(other) self._allPoints = other end
   function obj:SetMouseMasking(value) self._mask = value end
@@ -77,13 +84,15 @@ Event = { UI = {
   }},
   Slider = { Change = "slider-change" },
   Layout = { Size = "layout-size" },
-}}
+  Textfield = { Change = "textfield-change" },
+}, Addon = { SavedVariables = { Save = { Begin = {} }, Load = { End = {} } } } }
+Event.UI.Input.Key = { Down = "key-down" }
 Library = { LibSimpleWidgets = {
   Window = function(name, parent) return frame("Window", name, parent) end,
   SetBorder = function(view, ...) view._border = { ... } end,
 }}
 Inspect = { Addon = { Detail = function(name)
-  return { toc = { Version = name == "Inspector" and "1.9.0-preview2" or "?" } }
+  return { toc = { Version = name == "Inspector" and "1.9.0-preview2" or name == "LuaPad" and "2.0.0-preview7" or "?" } }
 end }}
 local registered = {}
 Command = {
@@ -252,5 +261,36 @@ frames.InspectorHelpCloseButton:Fire("left-click")
 check("Help closes", not frames.InspectorHelpWindow:GetVisible())
 frames.InspectorCloseButton:Fire("left-click")
 check("Inspector closes", not window:GetVisible())
-check("all cases passed", passed >= 55)
-originalPrint(string.format("Inspector runtime mock: %d assertions passed", passed))
+check("Inspector cases passed", passed >= 55)
+
+-- Load LuaPad with the same real ScrollView to test cross-addon integration.
+assert(loadfile("main.lua"))()
+local lpOutput = frames.LuaPadOutputField
+local lpScroll = frames.LuaPadOutputFieldScroll
+check("LuaPad and Inspector initialize together", lpOutput ~= nil and lpScroll.content == lpOutput)
+check("LuaPad slash /lp", registered.lp and #registered.lp == 1)
+LuaPad.doRun('print(("X"):rep(1500))')
+originalPrint("PROBE long output wordwrap=" .. tostring(lpOutput._wordwrap) .. " height=" .. tostring(lpOutput:GetHeight()) .. " maxOffset=" .. tostring(lpScroll:GetMaxOffset()))
+check("LuaPad output wraps long lines", lpOutput._wordwrap == true)
+check("LuaPad output height accounts for wrapped text", lpOutput:GetHeight() > 150)
+check("LuaPad long output scrolls", lpScroll:GetMaxOffset() > 0)
+frames.LuaPadCopyOutputButton:Fire("left-click")
+check("LuaPad full wrapped output copied", clipboard == lpOutput._text and #clipboard == 1500)
+lpScroll.offset = 175
+frames.LuaPadHelpButton:Fire("left-click")
+check("LuaPad help output visible", lpOutput._text:find("/lp or /luapad") ~= nil)
+check("LuaPad Help resets output scroll position", lpScroll.offset == 0)
+check("LuaPad Help height grows for multiline text", lpOutput:GetHeight() > 150)
+LuaPad.doRun('this is not valid lua !!!')
+check("LuaPad compile errors visible", lpOutput._text:find("Syntax error:") ~= nil)
+LuaPad.doRun('print("before-error"); error("sample runtime failure")')
+check("LuaPad runtime errors visible", lpOutput._text:find("Runtime error:") ~= nil and lpOutput._text:find("sample runtime failure") ~= nil)
+check("LuaPad pre-error print preserved", lpOutput._text:find("before%-error") ~= nil)
+LuaPad.doRun('print("short")')
+check("LuaPad short output resets height", lpOutput:GetHeight() == 150)
+check("LuaPad short output hides scrollbar", not lpScroll.scrollbar:GetVisible())
+check("LuaPad short output resets offset", lpScroll.offset == 0)
+LuaPad.doRun("")
+check("LuaPad empty-code guidance", lpOutput._text:find("Please enter some Lua code") ~= nil)
+check("all cases passed", passed >= 68)
+originalPrint(string.format("LuaPad plus Inspector runtime mock: %d assertions passed", passed))

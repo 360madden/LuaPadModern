@@ -1,8 +1,9 @@
-# LuaPad 2.0 preview 6 (physical-PC RIFT)
+# LuaPad 2.0 preview 7 (physical-PC RIFT)
 
 Source: copied from installed LuaPad 1.8 on 2026-11-03. Preview 1 was installed to physical RIFT AddOns at approximately 14:58 ET on 2026-11-03, after the game exited normally. Original addon and three account SavedVariables files were backed up. See DEPLOYMENT-2026-11-03.md. Preview 2 and Preview 3 are incremental two-file updates hot-copied into the active addon while RIFT remains open; `/reloadui` is needed to load updated Lua code.
 
 ## Changes
+- Preview 7: fixes LuaPad's output-pane clipping for long printed lines and multiline Help/errors by enabling explicit word wrapping and estimating displayed line height. It resets Help scroll to the top and preserves exact Copy Output text. The combined LuaPad + Inspector real-ScrollView runtime suite now passes 75 assertions. See `DEPLOYMENT-OUTPUT-PREVIEW7-2026-11-03.md`.
 - Preview 6: fixed exact-fit scrollbar visibility, negative scroll offsets, zero-height division and scrollbar toggling in embedded LibSimpleWidgets. Runtime harness now executes the real ScrollView implementation, including wheel and mouse drag tests; 58 assertions passed. This shared-library change benefits both LuaPad editor and Inspector output.
 - Preview 5 / Inspector 1.9.0-preview2: corrected an in-game RIFT Text:GetText() multi-return error that prevented every Inspect click; Inspector now reads numeric depth directly from RiftSlider. UI button exceptions become copyable in results. Reproduced the exact failure using a new 46-case Fengari runtime mock, then passed all tests after repair. See `DEPLOYMENT-INSPECTOR-PREVIEW2-2026-11-03.md`.
 - Preview 4: Inspector v1.9.0-preview1 redesign: read-only scrollable results, Copy Output, aligned consistent buttons, compact help, integer 1–5 slider, source-of-truth version title and startup chat notice. Traversal now distinguishes true cycles from shared table references, sorts bounded keys, guards huge tables and explains invalid expressions. See `DEPLOYMENT-INSPECTOR-PREVIEW1-2026-11-03.md`.
@@ -26,6 +27,7 @@ Source: copied from installed LuaPad 1.8 on 2026-11-03. Preview 1 was installed 
 - Preview 3: the Code Snippets heading now sits to the right of the toolbar without collision, and Code Editor / Output / Code Snippets share pale-cyan 12px labels.
 
 ## Current limitations / next gates
+- Preview 7 output wrapping and 75-case mock regression passed, but actual RIFT text wrapping/scrolling still requires Joey's `/reloadui` and visual acceptance.
 - Preview 6 scroll fixes passed mock execution, but real RIFT wheel/drag behavior still needs screenshot and user interaction acceptance after `/reloadui`.
 - Preview 5 source syntax and mocked RIFT UI behavior pass, but actual RIFT Inspector button, scrollbar and clipboard acceptance requires Joey's `/reloadui` and manual testing. Never call mocked results a live-game pass.
 - Preview 4 static validation passed 37/37 checks and Inspector Lua syntax. No in-game Inspector widget acceptance is claimed before Joey performs `/reloadui` and tests output/clipboard/help/depth.
@@ -38,6 +40,7 @@ Source: copied from installed LuaPad 1.8 on 2026-11-03. Preview 1 was installed 
 - Active-game two-file updates are backed up and hash-checked; new code only loads after `/reloadui`. Avoid reloading UI during critical gameplay.
 
 ## Verified preview packages
+- **Preview 7**: 44/44 structural checks, 75/75 cross-addon runtime mock assertions and 9/9 Lua syntax parses passed. `LuaPad-2.0.0-preview7.zip` SHA256 `d696387e1d3f41e530459e516c46efd73e9efc0179bbb68475ebfe8e5f60156a`, all 16 archived files matched source. Two-file hot-copy `main.lua` and `RiftAddon.toc` succeeded with SHA256 preflight, backup and postcopy verification. See `DEPLOYMENT-OUTPUT-PREVIEW7-2026-11-03.md`.
 - **Preview 3**: 27/27 structural checks passed; `main.lua` Lua syntax parsed successfully. `LuaPad-2.0.0-preview3.zip` SHA256 `16798ad85bd3124cfb1594d99a0f8defddc4fe1983cf07c31431d76155e4fb52`. All 15 archived files matched source SHA256.
 - **Preview 3 hot copy**: deployed 2026-11-03 at 15:26 ET while physical RIFT was running; both updated files matched source hashes, with Preview 2 backed up at `backups/luapad-preview2-before-hotcopy-20261103-152644`. See `DEPLOYMENT-PREVIEW3-2026-11-03.md`. In-game layout still needs screenshot acceptance.
 - **Preview 2**: `verify-preview.cjs` passed 25/25 structural checks; `main.lua` passed `luaparse@0.3.1` syntax parse. These checks do **not** establish in-game API behavior.
@@ -49,10 +52,10 @@ Source: copied from installed LuaPad 1.8 on 2026-11-03. Preview 1 was installed 
 The full installer remains intended for initial installation with RIFT closed. For the incremental Preview 1 → 2 → 3 updates we used bounded two-file backup-and-hot-copy while RIFT remained running. The optional `install-preview.ps1` was syntax-checked and **executed successfully on 2026-11-03 while RIFT was closed**. It refuses to run while the RIFT process exists, first copies each available `Saved/<account>/SavedVariables/LuaPad.lua` to `backups/LuaPad-SavedVariables-<timestamp>/<account>/`, then moves the original addon to a timestamped backup outside AddOns and copies only addon payload files. Its error handler moves the active AddOns target only after a preview directory was actually created. Do not rerun it while RIFT is active; consult the deployment checkpoint before reinstalling.
 
 ## Manual test gate
-1. Current Preview 6: use the guarded incremental hot-copy receipt (root `RiftAddon.toc` and embedded `LibSimpleWidgets/scrollview.lua`); do **not** rerun the full installer while RIFT is active.
-2. In RIFT type `/reloadui` (no game exit) to load the updated files. Check the chat initialization line states `[LuaPad v2.0.0-preview6] READY`.
-3. Type `/lp`: the title should read `LuaPad v2.0.0-preview6`. Reopen and verify it stays in sync.
-4. Run `print("LuaPad preview 3 OK")` and confirm the output.
+1. Current Preview 7: use the guarded incremental hot-copy receipt (root `RiftAddon.toc` and `main.lua`); do **not** rerun the full installer while RIFT is active.
+2. In RIFT type `/reloadui` (no game exit) to load the updated files. Check the chat initialization line states `[LuaPad v2.0.0-preview7] READY`.
+3. Type `/lp`: the title should read `LuaPad v2.0.0-preview7`. Reopen and verify it stays in sync.
+4. Run `print("LuaPad preview 7 OK")` and confirm the output.
 5. Run invalid Lua (e.g. `this is not valid lua !`) and confirm a syntax error; click **Copy Output**, then paste into Notepad or chat and verify the full error text.
 6. Run `error("test")`, click **Copy Output** again, and confirm that the traceback/error pastes faithfully.
 7. Verify the seven top-row buttons align and stay fully readable, Code Snippets heading does not overlap them, and Copy Output no longer floats below the output pane. Test Save/Load on an unused slot, Inspect open/close, hover/depress, and window drag. Report screenshots and any defects; tests are not considered passed by copying files alone.
