@@ -92,7 +92,7 @@ Library = { LibSimpleWidgets = {
   SetBorder = function(view, ...) view._border = { ... } end,
 }}
 Inspect = { Addon = { Detail = function(name)
-  return { toc = { Version = name == "Inspector" and "1.9.0-preview4" or name == "LuaPad" and "2.0.0-preview11" or "?" } }
+  return { toc = { Version = name == "Inspector" and "1.9.0-preview5" or name == "LuaPad" and "2.0.0-preview12" or "?" } }
 end }}
 local registered = {}
 Command = {
@@ -112,8 +112,8 @@ local slider = frames.InspectorSlider
 local inspect = frames.InspectorInspectButton
 local copy = frames.InspectorCopyButton
 local window = frames.InspectorTextWindow
-check("startup message", table.concat(messages, "\n"):find("Inspector v1.9.0%-preview4") ~= nil)
-check("version from TOC", window._title == "Inspector v1.9.0-preview4")
+check("startup message", table.concat(messages, "\n"):find("Inspector v1.9.0%-preview5") ~= nil)
+check("version from TOC", window._title == "Inspector v1.9.0-preview5")
 check("slash /ti", registered.ti and #registered.ti == 1)
 check("scroll view content", frames.InspectorOutputScroll.content == output)
 check("results read-only Text", output._kind == "Text")
@@ -166,6 +166,27 @@ check("large table bounded", output._text:find("%[inspection limited to 300 node
 InspectorFixture = { big = ("X"):rep(14000) }
 Inspector.doInspection("InspectorFixture", 3)
 check("long output bounded", output._text:find("%[output truncated at 12000 characters%]") ~= nil)
+-- A byte-oriented output cap must never split a multibyte UTF-8 character.
+local function completeUtf8(value)
+  local pending = 0
+  for i = 1, #value do
+    local byte = value:byte(i)
+    if pending > 0 then
+      if byte < 128 or byte > 191 then return false end
+      pending = pending - 1
+    elseif byte < 128 then
+      -- ASCII
+    elseif byte >= 194 and byte <= 223 then pending = 1
+    elseif byte >= 224 and byte <= 239 then pending = 2
+    elseif byte >= 240 and byte <= 244 then pending = 3
+    else return false end
+  end
+  return pending == 0
+end
+local euro = string.char(226, 130, 172)
+InspectorFixture = { e = euro:rep(5000) }
+Inspector.doInspection("InspectorFixture", 1)
+check("bounded Inspector table keeps complete UTF8", completeUtf8(output._text))
 check("overflow makes scrollbar visible", scroll.scrollbar:GetVisible())
 check("overflow has positive max offset", scroll:GetMaxOffset() > 0)
 scroll:Fire("wheel-back")
@@ -277,6 +298,11 @@ check("huge Inspector error frame bounded", output:GetHeight() <= 6000)
 check("huge Inspector error truncation disclosed", output._text:find("Copy Output includes full text", 1, true) ~= nil)
 copy:Fire("left-click")
 check("huge Inspector error copy preserves full diagnostic", clipboard ~= nil and #clipboard > #output._text and clipboard:find("line\nline", 1, true) ~= nil)
+-- Large runtime errors have a separate display cap and must retain UTF-8.
+Inspector.doInspection('error(("X"):rep(12080) .. string.char(226,130,172):rep(10), 0)', 1)
+check("bounded error preview keeps complete UTF8", completeUtf8(output._text))
+copy:Fire("left-click")
+check("bounded error preview preserves full UTF8 clipboard", completeUtf8(clipboard) and #clipboard > 12100 and clipboard:find(string.char(226,130,172):rep(10), 1, true) ~= nil and output._text:find("Copy Output includes full text", 1, true) ~= nil)
 check("Inspector cases passed", passed >= 60)
 
 -- Load LuaPad with the same real ScrollView to test cross-addon integration.

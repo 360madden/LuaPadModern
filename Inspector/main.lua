@@ -122,13 +122,32 @@ local function currentVersion()
   return "unknown"
 end
 
+-- Keep byte-limited output on complete UTF-8 codepoint boundaries. Lua 5.1
+-- indexes bytes, so a plain string:sub may split a multibyte character.
+local function utf8BytePrefix(value, maxBytes)
+  if #value <= maxBytes then return value end
+  local start = maxBytes
+  while start > 0 do
+    local byte = value:byte(start)
+    if byte < 128 or byte >= 192 then
+      local width = byte < 128 and 1 or byte < 224 and 2 or byte < 240 and 3 or byte < 248 and 4 or 1
+      if start + width - 1 > maxBytes then
+        return value:sub(1, start - 1)
+      end
+      break
+    end
+    start = start - 1
+  end
+  return value:sub(1, maxBytes)
+end
+
 -- Text is read-only. API/runtime errors can be arbitrarily long even when
 -- the inspected expression is short, so bound only the rendered preview.
 -- Copy Output always retains the complete diagnostic in lastOutput.
 local MAX_RENDER_CHARS, MAX_RENDER_NEWLINES = 12100, 300
 local function displayOutput(message)
   lastOutput = tostring(message or "")
-  local rendered = lastOutput:sub(1, MAX_RENDER_CHARS)
+  local rendered = utf8BytePrefix(lastOutput, MAX_RENDER_CHARS)
   local shortened = #rendered < #lastOutput
   local newlines, startAt = 0, 1
   while true do
@@ -284,7 +303,7 @@ local function formatValue(root, rootName, depth)
     if truncated then return end
     local left = MAX_CHARS - characters
     if #s > left then
-      if left > 0 then parts[#parts + 1] = s:sub(1, left) end
+      if left > 0 then parts[#parts + 1] = utf8BytePrefix(s, left) end
       parts[#parts + 1] = "\n[output truncated at 12000 characters]\n"
       truncated = true
       return
