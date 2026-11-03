@@ -92,7 +92,7 @@ Library = { LibSimpleWidgets = {
   SetBorder = function(view, ...) view._border = { ... } end,
 }}
 Inspect = { Addon = { Detail = function(name)
-  return { toc = { Version = name == "Inspector" and "1.9.0-preview2" or name == "LuaPad" and "2.0.0-preview7" or "?" } }
+  return { toc = { Version = name == "Inspector" and "1.9.0-preview2" or name == "LuaPad" and "2.0.0-preview8" or "?" } }
 end }}
 local registered = {}
 Command = {
@@ -292,5 +292,41 @@ check("LuaPad short output hides scrollbar", not lpScroll.scrollbar:GetVisible()
 check("LuaPad short output resets offset", lpScroll.offset == 0)
 LuaPad.doRun("")
 check("LuaPad empty-code guidance", lpOutput._text:find("Please enter some Lua code") ~= nil)
-check("all cases passed", passed >= 68)
+
+-- Snippet cards should keep a consistent selected state through Save, Load and Clear.
+local slot1 = frames.LuaPadSnippetButton1
+local editor = frames.LuaPadInputField
+slot1:Fire("left-click")
+local selectedStyle = { table.unpack(slot1._bg) }
+check("snippet slot visually selected", selectedStyle[4] == 1)
+editor:SetText('print("fixture slot")')
+frames.LuaPadSaveButton:Fire("left-click")
+check("snippet Save stores editor contents", LuaPad_Snippets[1] == 'print("fixture slot")')
+editor:SetText("temporary replacement")
+frames.LuaPadLoadButton:Fire("left-click")
+check("snippet Load restores exact code", editor._text == 'print("fixture slot")')
+local loadedStyle = slot1._bg
+check("snippet selected color consistent after Load", loadedStyle[1] == selectedStyle[1] and loadedStyle[2] == selectedStyle[2] and loadedStyle[3] == selectedStyle[3] and loadedStyle[4] == selectedStyle[4])
+frames.LuaPadClearButton:Fire("left-click")
+check("snippet Clear removes saved code", LuaPad_Snippets[1] == "")
+check("snippet selected slot remains readable", slot1._text:find("Slot 1") ~= nil)
+check("snippet captions more readable", slot1._fontSize == 10)
+slot1:Fire("cursor-in")
+check("snippet hover has visual feedback", slot1._bg[1] == 0.145)
+slot1:Fire("left-down")
+check("snippet press has recessed visual state", slot1._bg[1] == 0.045)
+slot1:Fire("left-up")
+slot1:Fire("cursor-out")
+check("snippet selected visual state restored", slot1._bg[1] == selectedStyle[1] and slot1._bg[4] == selectedStyle[4])
+local slot2 = frames.LuaPadSnippetButton2
+slot2:Fire("left-click")
+check("selecting another snippet clears previous highlight", slot1._bg[1] == 0.084)
+check("new snippet is visibly selected", slot2._bg[1] == selectedStyle[1])
+slot2:Fire("left-down")
+slot2:Fire("left-upoutside")
+check("snippet release outside clears pressed state", slot2._bg[1] == selectedStyle[1])
+LuaPad_Snippets[1] = ("LONG"):rep(12)
+fillSnippetButtons()
+check("long snippet previews stay within card width", #slot1._text <= 20)
+check("all cases passed", passed >= 80)
 originalPrint(string.format("LuaPad plus Inspector runtime mock: %d assertions passed", passed))

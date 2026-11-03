@@ -28,7 +28,7 @@ const inspector = read("Inspector/main.lua");
 const widgets = read("LibSimpleWidgets/uicreateframe.lua");
 const scroll = read("LibSimpleWidgets/scrollview.lua");
 const window = read("LibSimpleWidgets/window.lua");
-check("LuaPad preview version", /Version\s*=\s*"2\.0\.0-preview7"/.test(read("RiftAddon.toc")));
+check("LuaPad preview version", /Version\s*=\s*"2\.0\.0-preview8"/.test(read("RiftAddon.toc")));
 check("Direct widget construction", main.includes("Library.LibSimpleWidgets.Window") && main.includes("Library.LibSimpleWidgets.ScrollView") && inspector.includes("Library.LibSimpleWidgets.Window"));
 check("No global UI.CreateFrame override", !/UI\.CreateFrame\s*=/.test(widgets));
 check("No legacy RiftButton constructors", ![main, inspector].some(x => /UI\.CreateFrame\("RiftButton"/.test(x)));
@@ -41,6 +41,9 @@ check("Modern scroll events", scroll.includes("Event.UI.Layout.Size") && scroll.
 check("No full-window drag overlay", !window.includes("SetAllPoints(window)"));
 check("LuaPad output text wraps and grows", main.includes("outputField:SetWordwrap(true)") && main.includes("local visualLines = 0") && main.includes("setOutput(combined)"));
 check("Runtime harness covers root LuaPad and Inspector", read("inspector-runtime-tests.lua").includes('loadfile("main.lua")') && read("inspector-runtime-tests.lua").includes("LuaPad output wraps long lines"));
+check("Snippet cards have consistent interactive states", main.includes("local snippetRepaints = {}") && main.includes("LuaPad snippet hover ") && main.includes("LuaPad snippet down ") && main.includes("LuaPad snippet cancel ") && !main.includes("SetBackgroundColor(0,1,0,0.1)"));
+check("Snippet labels readable and bounded", main.includes("text:SetFontSize(10)") && main.includes("if #preview > 17"));
+check("Snippet state regressions covered", read("inspector-runtime-tests.lua").includes("snippet selected color consistent after Load") && read("inspector-runtime-tests.lua").includes("snippet press has recessed visual state"));
 check("Native clipboard output button", main.includes("LuaPadCopyOutputButton") && main.includes("pcall(Command.CopyToClipboard, content)"));
 check("Metadata-driven title", main.includes("Inspect.Addon.Detail") && main.includes("detail.toc.Version") && main.includes('"LuaPad v" .. currentVersion()'));
 check("Chat startup confirmation", main.includes('READY - type /lp to open') && main.includes('Loaded with UI errors'));

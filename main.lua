@@ -117,6 +117,7 @@ local label2 = UI.CreateFrame("Text", "LuaPadLabel2", luaPadWindow)
 local label3 = UI.CreateFrame("Text", "LuaPadLabel3", luaPadWindow)
 	
 local snippetButtons = {}
+local snippetRepaints = {}
 local selectedSnippet = nil
 
 local origPrint = nil
@@ -366,21 +367,44 @@ local function createSnippetButtons()
 		text:SetHeight(60-(textMargin/2))
 		text:SetBackgroundColor(0.084, 0.148, 0.182, 0.97)
 		text:SetFontColor(1,1,1)
-		text:SetFontSize(8)
+		text:SetFontSize(10)
 		text:SetWordwrap(false)
 		text:SetText('')
 		text:SetMouseMasking("full")
-		text:EventAttach(Event.UI.Input.Mouse.Left.Click, function()
-			for j = 1, 16 do
-				if snippetButtons[j] then
-					snippetButtons[j]:SetBackgroundColor(0.084, 0.148, 0.182, 0.97)
-				end
-			end
-			text:SetBackgroundColor(0.105, 0.215, 0.276, 1)
-			selectedSnippet = i
-		end, "LuaPad select snippet " .. i)
-
+		local hovered, pressed = false, false
+		local function repaint()
+			local selected = selectedSnippet == i
+			if pressed then text:SetBackgroundColor(0.045, 0.09, 0.126, 1)
+			elseif hovered then text:SetBackgroundColor(0.145, 0.28, 0.33, 0.99)
+			elseif selected then text:SetBackgroundColor(0.105, 0.215, 0.276, 1)
+			else text:SetBackgroundColor(0.084, 0.148, 0.182, 0.97) end
+			text:SetFontColor(selected and 0.47 or 0.94, selected and 0.92 or 0.96, selected and 1 or 0.98, 1)
+		end
 		snippetButtons[i] = text
+		snippetRepaints[i] = repaint
+		local mouse = Event.UI.Input.Mouse
+		if mouse.Cursor and mouse.Cursor.In then
+			text:EventAttach(mouse.Cursor.In, function() hovered = true; repaint() end, "LuaPad snippet hover " .. i)
+		end
+		if mouse.Cursor and mouse.Cursor.Out then
+			text:EventAttach(mouse.Cursor.Out, function() hovered = false; pressed = false; repaint() end, "LuaPad snippet leave " .. i)
+		end
+		if mouse.Left and mouse.Left.Down then
+			text:EventAttach(mouse.Left.Down, function() pressed = true; repaint() end, "LuaPad snippet down " .. i)
+		end
+		if mouse.Left and mouse.Left.Up then
+			text:EventAttach(mouse.Left.Up, function() pressed = false; repaint() end, "LuaPad snippet up " .. i)
+		end
+		if mouse.Left and mouse.Left.Upoutside then
+			text:EventAttach(mouse.Left.Upoutside, function() pressed = false; repaint() end, "LuaPad snippet cancel " .. i)
+		end
+		text:EventAttach(mouse.Left.Click, function()
+			selectedSnippet = i
+			for j = 1, 16 do
+				if snippetRepaints[j] then snippetRepaints[j]() end
+			end
+		end, "LuaPad select snippet " .. i)
+		repaint()
 	end
 end
 
@@ -396,7 +420,7 @@ function fillSnippetButtons()
 		if btn then
 			if LuaPad_Snippets[i] then
 				local preview = tostring(LuaPad_Snippets[i]):match("[^\r\n]*") or ""
-				if #preview > 22 then preview = preview:sub(1, 19) .. "..." end
+				if #preview > 17 then preview = preview:sub(1, 14) .. "..." end
 				btn:SetText(preview == "" and ("Slot " .. i .. " (empty)") or (i .. ": " .. preview))
 			else
 				btn:SetText("Slot " .. i .. " (empty)")
@@ -415,8 +439,8 @@ function loadSnippet()
 		else
 			inputField:SetText("")
 		end
-		if snippetButtons[selectedSnippet] then
-			snippetButtons[selectedSnippet]:SetBackgroundColor(0,1,0,0.1)
+		if snippetRepaints[selectedSnippet] then
+			snippetRepaints[selectedSnippet]()
 		end
 	end
 end

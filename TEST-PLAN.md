@@ -1,18 +1,18 @@
-# LuaPad 2.0 Preview 7 — in-game acceptance checklist
+# LuaPad 2.0 Preview 8 — in-game acceptance checklist
 
 **Target:** physical RIFT Live x64. No VMware. Do not use in combat or during an important session.
 
 ## Before test
-- [x] Preview 7 is hot-copied over Preview 6 on the physical PC. Do **not** rerun `install-preview.ps1` during gameplay.
+- [x] Preview 8 is hot-copied over Preview 7 on the physical PC. Do **not** rerun `install-preview.ps1` during gameplay.
 - [ ] Confirm the original LuaPad 1.8 and three account SavedVariables copies remain backed up.
-- [x] Run `verify-preview.cjs` from `C:\work\LuaPadModern` (44/44 checks passed) and parse Lua source (9/9 files passed).
-- [x] Back up installed Preview 6 `main.lua` and `RiftAddon.toc`; hot-copy only these two files with hash verification. Game exit is **not** required for this incremental update.
-- [ ] In RIFT, when safe, type `/reloadui` to load Preview 7. Record screenshot/version and addon errors.
+- [x] Run `verify-preview.cjs` from `C:\work\LuaPadModern` (47/47 checks passed) and parse Lua source (9/9 files passed).
+- [x] Back up installed Preview 7 `main.lua` and `RiftAddon.toc`; hot-copy only these two files with hash verification. Game exit is **not** required for this incremental update.
+- [ ] In RIFT, when safe, type `/reloadui` to load Preview 8. Record screenshot/version and addon errors.
 
 ## Runtime gates
 | ID | Action | Expected |
 | --- | --- | --- |
-| LP-01 | `/lp` in chat | Window title says `LuaPad v2.0.0-preview7`; buttons visible |
+| LP-01 | `/lp` in chat | Window title says `LuaPad v2.0.0-preview8`; buttons visible |
 | LP-02 | Hover/press Run, Save, Load, Inspect | Visual hover and depression with readable labels |
 | LP-03 | Type and run `print("LuaPad OK")` | Output contains exactly the message |
 | LP-04 | Type and run `this is not lua !` | Syntax error displayed, no addon crash |
@@ -25,7 +25,7 @@
 | LP-11 | Drag window by its border | Window moves; editor remains clickable |
 | LP-12 | Close and reopen via `/lp` | No duplicate controls or error |
 | LP-13 | Log out/re-enter normally | Saved snippet persists |
-| LP-14 | After `/reloadui`, review chat | `[LuaPad v2.0.0-preview7] READY` startup message appears, with no addon errors |
+| LP-14 | After `/reloadui`, review chat | `[LuaPad v2.0.0-preview8] READY` startup message appears, with no addon errors |
 | LP-15 | Run `this is not lua !`, then click Copy Output | Clipboard paste contains full syntax error text |
 | LP-16 | Run `error("test")`, then click Copy Output | Clipboard paste contains runtime error and traceback (when API allows) |
 | LP-17 | Select Help, then reopen `/lp` | Help and title both show current version from TOC |
@@ -33,6 +33,13 @@
 | LP-19 | Inspect all seven toolbar actions | One row above editor, even gaps, consistent button skins; no bottom orphan button |
 | LP-20 | Inspect Code Snippets heading | Clear separation from Help/Copy Output, no overlapping text |
 | LP-21 | Inspect section headings | Code Editor, Output, Code Snippets share consistent size and pale-cyan color |
+
+## Preview 8 snippet-card acceptance (after /reloadui)
+- [ ] LP-27: Click Slot 1, then Load and Save; selected highlight remains the same teal color (no translucent green).
+- [ ] LP-28: Hover a snippet card; its background brightens. Press/release; it visibly depresses then returns.
+- [ ] LP-29: Move off a held card and release; it must not remain stuck in pressed styling.
+- [ ] LP-30: Select Slot 2 after Slot 1; only Slot 2 remains highlighted.
+- [ ] LP-31: Check 10-point snippet text and truncation on saved long first lines; card labels remain readable without overflow.
 
 ## Preview 7 output rendering acceptance (after /reloadui)
 - [ ] LP-22: Run `print(string.rep("Hello ", 250))`; confirm word-wrapped output and a usable scrollbar, not horizontal clipping.
@@ -47,7 +54,7 @@
 - [ ] IP-15: Dragging the scrollbar changes position; releasing the mouse stops dragging. Returning to short output resets scroll offset to 0.
 - [ ] IP-16: LuaPad main editor/output scroll areas continue to work after shared LibSimpleWidgets scrollbar patch.
 - [ ] IP-00: Preview 5 fixes the reproduced Inspector button exception at `Inspector/main.lua:214` by reading numeric depth from the slider. Click Inspect several times; check NO more `tonumber` boolean-base errors appear in RIFT chat. Test errors now render in the copyable result pane.
-- [ ] IP-01: /ti opens centered Inspector with title `Inspector v1.9.0-preview2`; /lp title displays `LuaPad v2.0.0-preview7`.
+- [ ] IP-01: /ti opens centered Inspector with title `Inspector v1.9.0-preview2`; /lp title displays `LuaPad v2.0.0-preview8`.
 - [ ] IP-02: Output pane, input label, depth control, Inspect/Help/Close and Copy Output do not overlap or fall outside 800x600 window.
 - [ ] IP-03: Help fits entirely within 650x430 window; close/reopen works.
 - [ ] IP-04: Depth moves 1,2,3,4,5 from left to right; result expansion corresponds to setting.
