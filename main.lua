@@ -1,6 +1,6 @@
 --[[
 	Project: LuaPad
-	Version: 1.5.0
+	Current version: RiftAddon.toc (displayed dynamically at runtime)
 	Author: NerfedWar (http://www.nerfedwar.net - nerfed.war@gmail.com)
 	
 This program is free software: you can redistribute it and/or modify
@@ -109,6 +109,7 @@ local delButton = modernButton("LuaPadClearButton", luaPadWindow)
 local runButton = modernButton("LuaPadRunButton", luaPadWindow)
 local helpButton = modernButton("LuaPadHelpButton", luaPadWindow)
 local inspectButton = modernButton("LuaPadInspectButton", luaPadWindow)
+local copyOutputButton = modernButton("LuaPadCopyOutputButton", luaPadWindow)
 
 
 local label1 = UI.CreateFrame("Text", "LuaPadLabel1", luaPadWindow)
@@ -121,6 +122,19 @@ local selectedSnippet = nil
 local origPrint = nil
 
 local isRunning = false
+
+-- The TOC is the single source of truth for the displayed addon version.
+local function currentVersion()
+	local detailFn = Inspect and Inspect.Addon and Inspect.Addon.Detail
+	if type(detailFn) == "function" then
+		local ok, detail = pcall(detailFn, "LuaPad")
+		if ok and type(detail) == "table" and type(detail.toc) == "table" then
+			local version = detail.toc.Version or detail.toc.version
+			if version ~= nil and tostring(version) ~= "" then return tostring(version) end
+		end
+	end
+	return "unknown"
+end
 	
 -- Addon initialisation
 local function init()
@@ -130,7 +144,7 @@ local function init()
 	luaPadWindow:SetWidth(840)
 	luaPadWindow:SetHeight(600)
 	luaPadWindow:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 100, 100)
-	luaPadWindow:SetTitle("LuaPad 2.0 Preview")
+	luaPadWindow:SetTitle("LuaPad v" .. currentVersion())
 	luaPadWindow:SetLayer(1)
 	luaPadWindow:SetAlpha(0.98)
 	
@@ -224,9 +238,33 @@ local function init()
 	helpButton:SetWidth(80)
 	helpButton:SetPoint("TOPLEFT", luaPadWindow, "TOPLEFT", 452, 48)	
 	function helpButton.Event:LeftPress()
-		outputField:SetText("LuaPad 2.0 Preview\n/lp or /luapad: show editor\nRun: compile and execute code\nInspect: open object inspector\nSelect a snippet slot, then Save or Load.\nClear empties the selected snippet slot.\nSyntax and runtime errors appear here.\nStart with: print(Inspect and type(Inspect))")
+		outputField:SetText("LuaPad v" .. currentVersion() .. "\n/lp or /luapad: show editor\nRun: compile and execute code\nInspect: open object inspector\nSelect a snippet slot, then Save or Load.\nClear empties the selected snippet slot.\nSyntax and runtime errors appear here.\nCopy Output: copies the output text to the Windows clipboard.\nStart with: print(Inspect and type(Inspect))")
 	end	
 	
+
+	-- RIFT provides a native clipboard command. Copy the displayed output in one click.
+	copyOutputButton:SetText("Copy Output")
+	copyOutputButton:SetWidth(122)
+	copyOutputButton:SetPoint("TOPLEFT", luaPadWindow, "TOPLEFT", 410, 570)
+	copyOutputButton:SetLayer(2)
+	function copyOutputButton.Event:LeftPress()
+		local content = outputField and outputField:GetText() or ""
+		content = tostring(content or "")
+		if content == "" then
+			print("LuaPad: Nothing in the output pane to copy.")
+			return
+		end
+		if not Command or type(Command.CopyToClipboard) ~= "function" then
+			print("LuaPad: Clipboard API unavailable in this RIFT client.")
+			return
+		end
+		local ok, copied = pcall(Command.CopyToClipboard, content)
+		if ok and copied ~= false then
+			print("LuaPad: Output copied to clipboard (" .. #content .. " bytes).")
+		else
+			print("LuaPad: Copy failed: " .. tostring(copied))
+		end
+	end
 
 	closeButton:SetTexture("LuaPad", "close.png")
 	closeButton:SetPoint("TOPRIGHT", luaPadWindow, "TOPRIGHT", -8, 16)	
@@ -253,6 +291,7 @@ end
 
 -- display LuaPad
 local function showLuaPad()
+	luaPadWindow:SetTitle("LuaPad v" .. currentVersion())
 	luaPadWindow:SetVisible(true)
 end
 
@@ -445,6 +484,11 @@ local function startupStep(name, action)
 	return ok
 end
 if startupStep("init", init) then
-	startupStep("snippets", createSnippetButtons)
-	startupStep("load", loadSnippet)
+	local snippetsOk = startupStep("snippets", createSnippetButtons)
+	local loadOk = startupStep("load", loadSnippet)
+	if snippetsOk and loadOk then
+		print("[LuaPad v" .. currentVersion() .. "] READY - type /lp to open; Copy Output exports errors to clipboard.")
+	else
+		print("[LuaPad v" .. currentVersion() .. "] Loaded with UI errors. See the messages above.")
+	end
 end
