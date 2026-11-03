@@ -4,9 +4,9 @@
 
 ## Before test
 - [ ] Exit RIFT normally. Do not kill the process.
-- [ ] Preserve the installed `luapad` addon folder and the account SavedVariables.
+- [ ] Confirm the installed `luapad` addon folder and each account's `SavedVariables/LuaPad.lua` are present. Installer backs both up; retain extra independent copies if desired.
 - [ ] Run `verify-preview.cjs` from `C:\work\LuaPadModern` (22 structural checks expected).
-- [ ] Install via `install-preview.ps1` only while RIFT is closed. Script creates a timestamped original-addon backup.
+- [ ] Install via `install-preview.ps1` only while RIFT is closed. Verify its output reports the original-addon backup and account SavedVariables backup count.
 - [ ] Start RIFT normally. Record screenshot/version and any addon errors.
 
 ## Runtime gates

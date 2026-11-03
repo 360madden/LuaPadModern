@@ -22,7 +22,7 @@ Source: copied from installed LuaPad 1.8 on 2026-11-03. This is a separate worki
 - UI runtime has not been observed and existing embedded SimpleWindow, RiftTextfield, SimpleScrollView and Inspector dependencies remain.
 - Global print interception is now scoped to each Run operation and restored afterward; the runtime behavior still needs an in-game test.
 - Installed LuaPad 1.8 was not modified. The package must be deployed with **folder name luapad** because Identifier is LuaPad and embedded dependencies remain; do not load two copies simultaneously.
-- SavedVariables are account-wide; preserve an original saved-variable backup before first preview run.
+- SavedVariables are account-wide. The guarded installer now creates per-account LuaPad.lua copies before it touches the installed addon (three account files were found on this physical PC). Keep these backups; the rollback script does not silently overwrite live SavedVariables.
 - Do not test while critical gameplay is in progress.
 
 ## Verified preview package
@@ -31,7 +31,7 @@ Source: copied from installed LuaPad 1.8 on 2026-11-03. This is a separate worki
 - The live installed addon is unchanged.
 
 ## Guarded installation
-The optional `install-preview.ps1` was syntax-checked but **not executed**. It refuses to run while the RIFT process exists, moves the original addon to a timestamped backup outside AddOns, then copies only addon payload files. Do not invoke it until a normal game exit and after preserving SavedVariables.
+The optional `install-preview.ps1` was syntax-checked but **not executed**. It refuses to run while the RIFT process exists, first copies each available `Saved/<account>/SavedVariables/LuaPad.lua` to `backups/LuaPad-SavedVariables-<timestamp>/<account>/`, then moves the original addon to a timestamped backup outside AddOns and copies only addon payload files. Its error handler moves the active AddOns target only after a preview directory was actually created. Do not invoke it until a normal game exit.
 
 ## Manual test gate
 1. At a normal break, exit RIFT cleanly; copy the original installed luapad directory and its account SavedVariables elsewhere.
