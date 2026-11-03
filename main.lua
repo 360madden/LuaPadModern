@@ -312,6 +312,12 @@ end
 
 -- run the code!
 function LuaPad.doRun(obj)
+	-- A nested Run would replace origPrint with LuaPad.print itself, leaving the
+	-- global print hook recursive after the outer execution returns.
+	if isRunning then
+		LuaPad.print("LuaPad: Nested Run ignored; an editor script is already executing.")
+		return
+	end
 	if( (obj == nil) or (obj == "") ) then
 		setOutput('Please enter some Lua code and then press run.')
 		return

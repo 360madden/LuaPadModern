@@ -14,7 +14,7 @@ Description = {
 
 Author = "NerfedWar"
 Website = "http://www.nerfedwar.net"
-Version = "2.0.0-preview9"
+Version = "2.0.0-preview10"
 
 Email = "nerfed.war@gmail.com"
 

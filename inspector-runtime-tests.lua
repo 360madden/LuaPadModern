@@ -92,7 +92,7 @@ Library = { LibSimpleWidgets = {
   SetBorder = function(view, ...) view._border = { ... } end,
 }}
 Inspect = { Addon = { Detail = function(name)
-  return { toc = { Version = name == "Inspector" and "1.9.0-preview3" or name == "LuaPad" and "2.0.0-preview9" or "?" } }
+  return { toc = { Version = name == "Inspector" and "1.9.0-preview3" or name == "LuaPad" and "2.0.0-preview10" or "?" } }
 end }}
 local registered = {}
 Command = {
@@ -337,5 +337,15 @@ check("snippet release outside clears pressed state", slot2._bg[1] == selectedSt
 LuaPad_Snippets[1] = ("LONG"):rep(12)
 fillSnippetButtons()
 check("long snippet previews stay within card width", #slot1._text <= 20)
+-- A nested Run must not overwrite the process-wide print function or discard
+-- the outer script output; rejecting reentry must leave the outer run usable.
+local printBeforeNestedRun = print
+LuaPad.doRun('print("outer-start"); LuaPad.doRun([[print("nested")]]); print("outer-end")')
+check("nested Run restores global print", print == printBeforeNestedRun)
+check("nested Run reports safe rejection", lpOutput._text:find("Nested Run ignored", 1, true) ~= nil)
+check("nested Run retains outer output", lpOutput._text:find("outer-start", 1, true) ~= nil and lpOutput._text:find("outer-end", 1, true) ~= nil)
+check("nested Run does not execute inner script", lpOutput._text:find("\nnested\n", 1, true) == nil)
+LuaPad.doRun('print("after-nested")')
+check("Run usable after rejected nested invocation", lpOutput._text == "after-nested" and print == printBeforeNestedRun)
 check("all cases passed", passed >= 80)
 originalPrint(string.format("LuaPad plus Inspector runtime mock: %d assertions passed", passed))
