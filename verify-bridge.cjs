@@ -14,7 +14,7 @@ const suites = [
   ["ui-status-tests.lua", 40, "Read-only UI focus/layer checks: 40 passed"],
   ["bridge-router-tests.lua", 70, "Bridge v1 router checks: 70 passed"],
   ["bridge-slash-tests.lua", 165, "Source-only slash transport checks: 165 passed"],
-  ["inspector-runtime-tests.lua", 128, "LuaPad plus Inspector runtime mock: 128 assertions passed"]
+  ["inspector-runtime-tests.lua", 141, "LuaPad plus Inspector runtime mock: 141 assertions passed"]
 ];
 let ok = true;
 const receipts = [];

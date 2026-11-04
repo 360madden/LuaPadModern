@@ -53,7 +53,7 @@ try {
     }
     Write-Host "Installed LuaPad preview. Original addon backup: $backup" -ForegroundColor Green
     Write-Host "SavedVariables copied for $savedCount account(s) to $savedBackup" -ForegroundColor Cyan
-    Write-Host 'Start RIFT normally and enter /lp.' -ForegroundColor Cyan
+    Write-Host 'Start RIFT normally; LuaPad Preview 18 should open automatically. Use /lp to reopen or bring it forward.' -ForegroundColor Cyan
 }
 catch {
     if ($previewCreated -and (Test-Path -LiteralPath $target)) {

@@ -368,12 +368,97 @@ local function init()
 end
 
 
--- display LuaPad
+-- Lift the whole addon context, not just the child window layer. RIFT
+-- orders contexts by strata first; a child:SetLayer() alone cannot beat another
+-- addon's context. Only promote when explicitly showing LuaPad.
+local function bringLuaPadForward()
+	local targetStrata = "dialog"
+	if type(context.GetStrataList) == "function" then
+		local ok, available = pcall(context.GetStrataList, context)
+		if ok and type(available) == "table" then
+			targetStrata = nil
+			for _, name in ipairs(available) do
+				if name == "dialog" then targetStrata = name; break end
+			end
+		end
+	end
+	if targetStrata and type(context.SetStrata) == "function" then
+		pcall(context.SetStrata, context, targetStrata)
+	end
+
+	-- Peer contexts are published under UI.Context[addon][name][index].
+	-- Only compare peers in our actual strata; traversal and layer are bounded
+	-- so a broken/hostile addon cannot cause an infinite scan or layer race.
+	local ourStrata
+	if type(context.GetStrata) == "function" then
+		local ok, strata = pcall(context.GetStrata, context)
+		if ok and type(strata) == "string" then ourStrata = strata end
+	end
+	local highest, traversed, seen = 0, 0, {}
+	local function visit(node, depth)
+		if depth > 4 or traversed >= 256 then return end
+		local kind = type(node)
+		if kind ~= "table" and kind ~= "userdata" then return end
+		if seen[node] then return end
+		seen[node] = true
+		traversed = traversed + 1
+		local ok, getterLayer, getterStrata = pcall(function()
+			return node.GetLayer, node.GetStrata
+		end)
+		if ok and type(getterLayer) == "function" and type(getterStrata) == "function" then
+			if node ~= context and ourStrata then
+				local gotLayer, layer = pcall(getterLayer, node)
+				local gotStrata, strata = pcall(getterStrata, node)
+				if gotLayer and gotStrata and strata == ourStrata
+					and type(layer) == "number" and layer == layer
+					and layer >= 0 and layer < 1024 then
+					highest = math.max(highest, math.floor(layer))
+				end
+			end
+			return
+		end
+		if kind == "table" then
+			for _, child in pairs(node) do visit(child, depth + 1) end
+		end
+	end
+	if type(UI.Context) == "table" then visit(UI.Context, 0) end
+
+	local ours = 0
+	if type(context.GetLayer) == "function" then
+		local ok, layer = pcall(context.GetLayer, context)
+		if ok and type(layer) == "number" and layer == layer and layer >= 0 then
+			ours = layer
+		end
+	end
+	local needed = math.min(1024, math.max(10, highest + 1))
+	if ours < needed and type(context.SetLayer) == "function" then
+		pcall(context.SetLayer, context, needed)
+	end
+end
+
+-- Showing on startup must not steal the user's gameplay keyboard focus.
 local function showLuaPad()
 	luaPadWindow:SetTitle("LuaPad v" .. currentVersion())
+	bringLuaPadForward()
 	luaPadWindow:SetVisible(true)
 end
 
+
+local function scheduleFirstFrameRaise()
+	-- Other addons can create dialog contexts after our Lua file executes.
+	-- Re-evaluate z-order once on the first rendered frame, then detach.
+	if not (Event.System and Event.System.Update and Event.System.Update.Begin
+		and Command.Event and type(Command.Event.Attach) == "function"
+		and type(Command.Event.Detach) == "function") then return end
+	local firstFrame, fired = nil, false
+	firstFrame = function()
+		if fired then return end
+		fired = true
+		pcall(Command.Event.Detach, Event.System.Update.Begin, firstFrame)
+		if luaPadWindow:GetVisible() then bringLuaPadForward() end
+	end
+	Command.Event.Attach(Event.System.Update.Begin, firstFrame, "LuaPad startup z-order")
+end
 
 -- run the code!
 function LuaPad.doRun(obj)
@@ -592,8 +677,9 @@ end
 if startupStep("init", init) then
 	local snippetsOk = startupStep("snippets", createSnippetButtons)
 	local loadOk = startupStep("load", loadSnippet)
-	if snippetsOk and loadOk then
-		print("[LuaPad v" .. currentVersion() .. "] READY - type /lp to open; Copy Output exports errors to clipboard.")
+	if snippetsOk and loadOk and startupStep("show", showLuaPad) then
+		startupStep("first-frame stacking", scheduleFirstFrameRaise)
+		print("[LuaPad v" .. currentVersion() .. "] READY - editor opened automatically; /lp brings it forward again.")
 	else
 		print("[LuaPad v" .. currentVersion() .. "] Loaded with UI errors. See the messages above.")
 	end

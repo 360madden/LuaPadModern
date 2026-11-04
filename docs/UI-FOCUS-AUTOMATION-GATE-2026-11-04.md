@@ -1,5 +1,5 @@
 # LuaPadModern UI stacking, keyboard focus and automation readiness
-Date: 2026-11-04. Status: source-backed diagnosis and implementation design; **physical overlap acceptance pending**.
+Date: 2026-11-04. Status: **Preview 18 source-level auto-open and layering fix implemented; physical overlap acceptance pending**.
 
 ## Why this is a bridge concern
 
@@ -8,7 +8,7 @@ Windows foreground activation does not guarantee LuaPad is the top reachable RIF
 2. **RIFT stacking:** LuaPad window visible, its context's strata and layer, relative overlap with other addons/native dialogs.
 3. **Editor focus:** the RiftTextfield owns key focus and the selected editing target is known. Focus is not inferred from a click return code.
 
-## Source findings (Preview17)
+## Historical source findings (Preview 17)
 
 - main.lua creates UI.CreateContext("LuaPadContext") and a RiftWindow in that context (lines 22-23).
 - init() hides LuaPad and sets luaPadWindow:SetLayer(1) (lines 203-210).
@@ -22,6 +22,15 @@ Historical RIFT addon API documentation (verify against RIFT Live):
 - Frame:GetStrata, GetStrataList, SetStrata control coarser ordering: https://www.seebs.net/rift/pts/frame_getstrata.html
 - Frame:GetKeyFocus / SetKeyFocus manage keyboard focus: https://www.seebs.net/rift/pts/frame_getkeyfocus.html
 - RIFT 1.7 release notes say dialog interaction may change context layer order: https://www.riftui.com/forums/showthread.php?t=217
+
+## Preview 18 P1 implementation (source tested)
+
+- On successful initialization, `showLuaPad()` now automatically sets visibility true; `/lp` is no longer required on launch or `/reloadui`.
+- `bringLuaPadForward()` attempts the supported `dialog` strata, then scans RIFT's `UI.Context` registry (maximum four levels and 256 visited entries) for context layers in the same strata and raises the LuaPad context above peers with a bounded target. A missing/unsupported API fails softly.
+- A one-shot `Event.System.Update.Begin` callback checks stacking again on the **first rendered frame**, accounting for addons created later in the load sequence; the callback detaches using `Command.Event.Detach` and has an additional in-memory one-shot guard.
+- Manual `/lp` re-raises the context if native dialog interaction or another addon moved it down. The close button remains a deliberate hide action; startup does not call editor `SetKeyFocus(true)`.
+- Mocked scenarios verify auto-open, strata, a higher pre-existing dialog addon, a late-loading addon, single-fire detachment, explicit close, `/lp` recovery, and no implicit editor focus.
+- Guarded two-file Preview 18 hot-copy into physical AddOns succeeded with verified Preview 17 rollback files; no UI reload or game input was performed. A RIFT live capture is still needed: self-reported strata/layer alone cannot establish that no native window occludes the editor.
 
 ## Proposed source-of-truth API
 
@@ -38,7 +47,7 @@ Windows host separately supplies windowForeground, pinned HWND/PID, screenshot e
 
 ## Activation policy
 
-- User /lp or explicit host ui.ensureReady may request to raise LuaPad. Read-only health and telemetry must not steal focus.
+- Preview 18 raises context visibility/stacking at startup as a requested P1 behavior, without acquiring keyboard focus. User `/lp` or explicit future host `ui.ensureReady` can re-raise later. Read-only health and telemetry must not steal focus.
 - Measure context layer/strata before changing either. Do not hardcode extreme SetLayer(9999999) or permanent topmost; establish bounded reversible policy using physical tests.
 - For explicit editor-input operations, require visible LuaPad, acceptable layer, inputField:SetKeyFocus(true), and read back GetKeyFocus()==true. Confirm Windows foreground HWND before injecting Enter/Tab.
 - Screenshot/occlusion is independent: editor key focus alone is insufficient with a modal or overlapping addon.
@@ -50,7 +59,8 @@ Windows host separately supplies windowForeground, pinned HWND/PID, screenshot e
 
 | Scenario | Evidence required | State |
 | --- | --- | --- |
-| LuaPad opened with another addon above | Before/after screenshot, GetStrata/GetLayer, front order | Pending |
+| Automatic opening on RIFT startup/reload, without /lp | Fresh screenshot, version, visible editor, no editor key focus | Source mock passed; **physical pending** |
+| LuaPad opened with another addon above | Before/after screenshot, GetStrata/GetLayer, front order | Source mock passed; **physical pending** |
 | /lp used after native dialog interaction | Consistent z-order promotion without concealing native dialogs | Pending |
 | Editor click, Enter, Tab | Exact HWND foreground; editor focus true; actual text and screenshot | Pending; Preview17 basic keys passed |
 | Window resize or move | Fresh client bounds, no old-coordinate action | Pending |
@@ -62,8 +72,8 @@ Windows host separately supplies windowForeground, pinned HWND/PID, screenshot e
 
 1. Add mockable ui.status observation without layering mutations.
 2. Test hidden/no-focus, visible-but-occluded and foreground-without-editor-focus.
-3. Add deliberate ui.activate and ui.focusEditor after verifying actual context semantics, using bounded layers.
+3. Preview 18 adds bounded context raise on auto-open, first frame and `/lp`; separate explicit editor-focus activation remains pending, as does physical verification.
 4. Add Windows-host readiness gate correlating pinned HWND/PID, addon state and a fresh screenshot.
 5. Physically test overlap/key injection before exposing Workbridge tools as live-capable.
 
-This document does not claim the physical RIFT z-order bug is fixed.
+**Evidence boundary:** source/mock logic has been repaired, but this document does **not** yet claim the physical RIFT z-order bug is fixed.

@@ -33,6 +33,10 @@ local function frame(kind, name, parent)
   function obj:GetTop() return self._top or 0 end
   function obj:GetBackgroundColor() return table.unpack(self._bg or {0,0,0,0}) end
   function obj:SetLayer(value) self._layer = value end
+  function obj:GetLayer() return self._layer or 0 end
+  function obj:SetStrata(value) self._strata = value end
+  function obj:GetStrata() return self._strata or "hud" end
+  function obj:GetStrataList() return {"hud", "dialog", "tooltip"} end
   function obj:SetAlpha(value) self._alpha = value end
   function obj:GetCursor() return self._cursor or #self._text end
   function obj:SetCursor(value) self._cursor = value end
@@ -77,7 +81,14 @@ local function frame(kind, name, parent)
 end
 UIParent = frame("Frame", "UIParent")
 UI = {
-  CreateContext = function(name) return frame("Context", name, UIParent) end,
+  Context = {},
+  CreateContext = function(name)
+    local created = frame("Context", name, UIParent)
+    UI.Context.RuntimeMock = UI.Context.RuntimeMock or {}
+    UI.Context.RuntimeMock[name] = UI.Context.RuntimeMock[name] or {}
+    table.insert(UI.Context.RuntimeMock[name], created)
+    return created
+  end,
   CreateFrame = function(kind, name, parent) return frame(kind, name, parent) end,
 }
 Event = { UI = {
@@ -89,17 +100,26 @@ Event = { UI = {
   Slider = { Change = "slider-change" },
   Layout = { Size = "layout-size" },
   Textfield = { Change = "textfield-change" },
-}, Addon = { SavedVariables = { Save = { Begin = {} }, Load = { End = {} } } } }
+}, System = { Update = { Begin = {} } }, Addon = { SavedVariables = { Save = { Begin = {} }, Load = { End = {} } } } }
 Event.UI.Input.Key = { Down = "key-down" }
 Library = { LibSimpleWidgets = {
   Window = function(name, parent) return frame("Window", name, parent) end,
   SetBorder = function(view, ...) view._border = { ... } end,
 }}
 Inspect = { Addon = { Detail = function(name)
-  return { toc = { Version = name == "Inspector" and "1.9.0-preview5" or name == "LuaPad" and "2.0.0-preview17" or "?" } }
+  return { toc = { Version = name == "Inspector" and "1.9.0-preview5" or name == "LuaPad" and "2.0.0-preview18" or "?" } }
 end }}
 local registered = {}
 Command = {
+  Event = {
+    Attach = function(event, handler, label) table.insert(event, {handler, "RuntimeMock", label}) end,
+    Detach = function(event, handler)
+      for i, entry in ipairs(event) do
+        if entry[1] == handler then table.remove(event, i); return true end
+      end
+      return false
+    end,
+  },
   Slash = { Register = function(name)
     registered[name] = {}
     return registered[name]
@@ -309,8 +329,36 @@ copy:Fire("left-click")
 check("bounded error preview preserves full UTF8 clipboard", completeUtf8(clipboard) and #clipboard > 12100 and clipboard:find(string.char(226,130,172):rep(10), 1, true) ~= nil and output._text:find("Copy Output includes full text", 1, true) ~= nil)
 check("Inspector cases passed", passed >= 60)
 
+-- Emulate an existing visible addon above HUD and with a raised dialog layer.
+-- Startup must show LuaPad and select a higher context layer, without /lp.
+local otherDialog = UI.CreateContext("MockHigherDialog")
+otherDialog:SetStrata("dialog")
+otherDialog:SetLayer(37)
 -- Load LuaPad with the same real ScrollView to test cross-addon integration.
 assert(loadfile("main.lua"))()
+local lpContext = frames.LuaPadContext
+local lpWindow = frames.LuaPadluaPadWindow
+local lpEditor = frames.LuaPadInputField
+check("LuaPad opens immediately on startup without slash", lpWindow:GetVisible() == true)
+check("LuaPad context promoted to dialog strata", lpContext:GetStrata() == "dialog")
+check("LuaPad context outranks another dialog addon", lpContext:GetLayer() > otherDialog:GetLayer())
+check("auto-open does not steal editor key focus", lpEditor._keyfocus ~= true)
+check("startup message reports auto-open", table.concat(messages,"\\n"):find("editor opened automatically",1,true) ~= nil)
+check("startup defers final layer check to first frame", #Event.System.Update.Begin == 1)
+local firstFrame = Event.System.Update.Begin[1][1]
+otherDialog:SetLayer(lpContext:GetLayer() + 3)
+firstFrame()
+check("first-frame layer check outranks later addon", lpContext:GetLayer() > otherDialog:GetLayer())
+check("first-frame listener detaches after one run", #Event.System.Update.Begin == 0)
+check("first-frame check preserves editor focus", lpEditor._keyfocus ~= true)
+frames.LuaPadCloseButton:Fire("left-click")
+check("LuaPad close still hides window", lpWindow:GetVisible() == false)
+otherDialog:SetLayer(lpContext:GetLayer() + 2)
+firstFrame()
+check("first-frame callback never repeats after detaching", lpContext:GetLayer() < otherDialog:GetLayer())
+registered.lp[1][1]()
+check("/lp reopens hidden LuaPad", lpWindow:GetVisible() == true)
+check("/lp re-promotes above newly raised addon", lpContext:GetLayer() > otherDialog:GetLayer())
 local lpOutput = frames.LuaPadOutputField
 local lpScroll = frames.LuaPadOutputFieldScroll
 check("LuaPad and Inspector initialize together", lpOutput ~= nil and lpScroll.content == lpOutput)
