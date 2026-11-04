@@ -28,7 +28,7 @@ const inspector = read("Inspector/main.lua");
 const widgets = read("LibSimpleWidgets/uicreateframe.lua");
 const scroll = read("LibSimpleWidgets/scrollview.lua");
 const window = read("LibSimpleWidgets/window.lua");
-check("LuaPad preview version", /Version\s*=\s*"2\.0\.0-preview18"/.test(read("RiftAddon.toc")));
+check("LuaPad preview version", /Version\s*=\s*"2\.0\.0-preview19"/.test(read("RiftAddon.toc")));
 check("Direct widget construction", main.includes("Library.LibSimpleWidgets.Window") && main.includes("Library.LibSimpleWidgets.ScrollView") && inspector.includes("Library.LibSimpleWidgets.Window"));
 check("No global UI.CreateFrame override", !/UI\.CreateFrame\s*=/.test(widgets));
 check("No legacy RiftButton constructors", ![main, inspector].some(x => /UI\.CreateFrame\("RiftButton"/.test(x)));
@@ -52,7 +52,7 @@ check("Snippet state regressions covered", read("inspector-runtime-tests.lua").i
 check("Native clipboard output button", main.includes("LuaPadCopyOutputButton") && main.includes("pcall(Command.CopyToClipboard, content)"));
 check("Metadata-driven title", main.includes("Inspect.Addon.Detail") && main.includes("detail.toc.Version") && main.includes('"LuaPad v" .. currentVersion()'));
 check("Chat startup confirmation", main.includes('READY - editor opened automatically') && main.includes('Loaded with UI errors'));
-check("Auto-open layers and rechecks once on first frame", main.includes('bringLuaPadForward()') && main.includes('context.SetStrata') && main.includes('context.SetLayer') && main.includes('Command.Event.Attach(Event.System.Update.Begin, firstFrame') && main.includes('Command.Event.Detach, Event.System.Update.Begin, firstFrame') && read("inspector-runtime-tests.lua").includes("first-frame layer check outranks later addon"));
+check("Auto-open layers and rechecks once on first frame", main.includes('bringLuaPadForward()') && main.includes('context.SetStrata') && main.includes('context.SetLayer') && main.includes('"topmost"') && main.includes('neededWindow') && read("inspector-runtime-tests.lua").includes("LuaPad window outranks 999995 BotFight child") && main.includes('Command.Event.Attach(Event.System.Update.Begin, firstFrame') && main.includes('Command.Event.Detach, Event.System.Update.Begin, firstFrame') && read("inspector-runtime-tests.lua").includes("first-frame layer check outranks later addon"));
 check("Unified 7-button toolbar", main.includes('{ copyOutputButton, "Copy Output", 112 }') && main.includes("toolbarX = toolbarX + width + 5") && main.includes('toolbarX, 48'));
 check("Section labels aligned", main.includes('label3:SetPoint("TOPLEFT", luaPadWindow, "TOPLEFT", 554, 48)') && (main.match(/SetFontColor\(0\.73,0\.88,0\.92,1\)/g) || []).length === 3);
 check("Inspector version source of truth", /Version\s*=\s*"1\.9\.0-preview5"/.test(read("Inspector/RiftAddon.toc")) && inspector.includes('detail.toc.Version') && inspector.includes('textWindow:SetTitle("Inspector v" .. currentVersion())'));

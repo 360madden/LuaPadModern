@@ -19,6 +19,11 @@ end
 local function frame(kind, name, parent)
   local obj = { _kind = kind, _name = name, _text = "", _visible = true, _events = {}, _parent = parent, Event = {} }
   frames[name] = obj
+  if parent then
+    parent._children = parent._children or {}
+    table.insert(parent._children, obj)
+  end
+  function obj:GetChildren() return self._children or {} end
   function obj:GetName() return self._name end
   function obj:GetParent() return self._parent end
   function obj:SetParent(value) self._parent = value end
@@ -35,8 +40,8 @@ local function frame(kind, name, parent)
   function obj:SetLayer(value) self._layer = value end
   function obj:GetLayer() return self._layer or 0 end
   function obj:SetStrata(value) self._strata = value end
-  function obj:GetStrata() return self._strata or "hud" end
-  function obj:GetStrataList() return {"hud", "dialog", "tooltip"} end
+  function obj:GetStrata() return self._strata or (self._parent and self._parent:GetStrata()) or "hud" end
+  function obj:GetStrataList() return {"hud", "dialog", "topmost"} end
   function obj:SetAlpha(value) self._alpha = value end
   function obj:GetCursor() return self._cursor or #self._text end
   function obj:SetCursor(value) self._cursor = value end
@@ -107,7 +112,7 @@ Library = { LibSimpleWidgets = {
   SetBorder = function(view, ...) view._border = { ... } end,
 }}
 Inspect = { Addon = { Detail = function(name)
-  return { toc = { Version = name == "Inspector" and "1.9.0-preview5" or name == "LuaPad" and "2.0.0-preview18" or "?" } }
+  return { toc = { Version = name == "Inspector" and "1.9.0-preview5" or name == "LuaPad" and "2.0.0-preview19" or "?" } }
 end }}
 local registered = {}
 Command = {
@@ -329,36 +334,57 @@ copy:Fire("left-click")
 check("bounded error preview preserves full UTF8 clipboard", completeUtf8(clipboard) and #clipboard > 12100 and clipboard:find(string.char(226,130,172):rep(10), 1, true) ~= nil and output._text:find("Copy Output includes full text", 1, true) ~= nil)
 check("Inspector cases passed", passed >= 60)
 
--- Emulate an existing visible addon above HUD and with a raised dialog layer.
--- Startup must show LuaPad and select a higher context layer, without /lp.
+-- Reproduce the physical Preview 18 stacking failure. BotFight assigns
+-- "topmost" to a context and 999990-999995 to child windows/frames. The
+-- RiftReader API Readiness window assigns layer 999990 in default context.
 local otherDialog = UI.CreateContext("MockHigherDialog")
 otherDialog:SetStrata("dialog")
 otherDialog:SetLayer(37)
+local otherTopmost = UI.CreateContext("MockBotFightTopmost")
+otherTopmost:SetStrata("topmost")
+otherTopmost:SetLayer(45)
+local rackWindow = frame("RiftWindow", "MockBotFightRackWindow", otherTopmost)
+rackWindow:SetLayer(999990)
+local rackChild = frame("Frame", "MockBotFightRackChild", rackWindow)
+rackChild:SetLayer(999995)
+local readinessContext = UI.CreateContext("MockRiftReaderReadiness")
+local readinessWindow = frame("RiftWindow", "MockRiftReaderReadinessWindow", readinessContext)
+readinessWindow:SetLayer(999990)
 -- Load LuaPad with the same real ScrollView to test cross-addon integration.
 assert(loadfile("main.lua"))()
 local lpContext = frames.LuaPadContext
 local lpWindow = frames.LuaPadluaPadWindow
 local lpEditor = frames.LuaPadInputField
 check("LuaPad opens immediately on startup without slash", lpWindow:GetVisible() == true)
-check("LuaPad context promoted to dialog strata", lpContext:GetStrata() == "dialog")
-check("LuaPad context outranks another dialog addon", lpContext:GetLayer() > otherDialog:GetLayer())
+check("LuaPad context promoted to topmost strata", lpContext:GetStrata() == "topmost")
+check("LuaPad context outranks another topmost addon", lpContext:GetLayer() > otherTopmost:GetLayer())
+check("LuaPad window outranks 999995 BotFight child", lpWindow:GetLayer() > rackChild:GetLayer())
+check("LuaPad window outranks 999990 API Readiness", lpWindow:GetLayer() > readinessWindow:GetLayer())
+check("LuaPad high layer remains bounded", lpWindow:GetLayer() <= 2000000)
 check("auto-open does not steal editor key focus", lpEditor._keyfocus ~= true)
 check("startup message reports auto-open", table.concat(messages,"\\n"):find("editor opened automatically",1,true) ~= nil)
 check("startup defers final layer check to first frame", #Event.System.Update.Begin == 1)
 local firstFrame = Event.System.Update.Begin[1][1]
-otherDialog:SetLayer(lpContext:GetLayer() + 3)
+local laterTopmost = UI.CreateContext("MockLateTopmost")
+laterTopmost:SetStrata("topmost")
+laterTopmost:SetLayer(lpContext:GetLayer() + 3)
+local laterWindow = frame("RiftWindow", "MockLateTopmostWindow", laterTopmost)
+laterWindow:SetLayer(lpWindow:GetLayer() + 4)
 firstFrame()
-check("first-frame layer check outranks later addon", lpContext:GetLayer() > otherDialog:GetLayer())
+check("first-frame layer check outranks later addon", lpContext:GetLayer() > laterTopmost:GetLayer())
+check("first-frame layer check outranks later high-layer window", lpWindow:GetLayer() > laterWindow:GetLayer())
 check("first-frame listener detaches after one run", #Event.System.Update.Begin == 0)
 check("first-frame check preserves editor focus", lpEditor._keyfocus ~= true)
 frames.LuaPadCloseButton:Fire("left-click")
 check("LuaPad close still hides window", lpWindow:GetVisible() == false)
-otherDialog:SetLayer(lpContext:GetLayer() + 2)
+laterTopmost:SetLayer(lpContext:GetLayer() + 2)
+laterWindow:SetLayer(lpWindow:GetLayer() + 2)
 firstFrame()
-check("first-frame callback never repeats after detaching", lpContext:GetLayer() < otherDialog:GetLayer())
+check("first-frame callback never repeats after detaching", lpContext:GetLayer() < laterTopmost:GetLayer())
 registered.lp[1][1]()
 check("/lp reopens hidden LuaPad", lpWindow:GetVisible() == true)
-check("/lp re-promotes above newly raised addon", lpContext:GetLayer() > otherDialog:GetLayer())
+check("/lp re-promotes above newly raised addon", lpContext:GetLayer() > laterTopmost:GetLayer())
+check("/lp re-promotes window above later high-layer addon", lpWindow:GetLayer() > laterWindow:GetLayer())
 local lpOutput = frames.LuaPadOutputField
 local lpScroll = frames.LuaPadOutputFieldScroll
 check("LuaPad and Inspector initialize together", lpOutput ~= nil and lpScroll.content == lpOutput)

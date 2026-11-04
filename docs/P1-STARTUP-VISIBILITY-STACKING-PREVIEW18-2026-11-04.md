@@ -1,7 +1,7 @@
 # LuaPadModern P1 — automatic startup visibility and addon stacking (Preview 18)
 
 Date: 2026-11-04. Scope: `C:\work\LuaPadModern` source and guarded RIFT deployment.
-Status: **source/mock fix complete; physical RIFT acceptance pending**.
+Status: **physical auto-open PASSED; physical stacking FAILED; superseded by Preview 19**. See [Preview 19 corrective checkpoint](P1-STACKING-PREVIEW19-2026-11-04.md).
 
 ## User-visible defect and root cause
 
@@ -40,13 +40,20 @@ Mock acceptance deliberately injects a dialog addon before LuaPad, a later dialo
 - Independently re-read exact installed file hashes and both backup hashes; all four match expected values. Rollback directory: `C:\work\LuaPadModern\backups\luapad-preview18-before-hotcopy-20261104-080152`.
 - **No game foreground activation, keyboard/mouse input, `/reloadui`, process restart or SavedVariables write was performed.** Installed Preview 18 bytes will take effect at next authorized UI reload/normal launch. This is a file-copy success, **not a live stacking pass**.
 
-## Physical deployment and acceptance gate
+## Physical outcome reported by Joey (2026-11-04 08:25 ET)
 
-- Last independently documented physical baseline is Preview 17 (the editor's Enter/Tab and ASCII selected-text behavior passed; rollback copies in `backups/luapad-preview17-before-hotcopy-20261104-0939-nativekeys`). Preserve original addon and account SavedVariables backups.
-- Confirm the *current* installed `luapad/main.lua` and `luapad/RiftAddon.toc` hashes before copying. If hashes differ from documented Preview 17, **stop rather than overwrite**.
+- Joey's screenshot visibly shows `LuaPad v2.0.0-preview18` automatically present at game startup without needing `/lp`: **auto-open PASS**.
+- The `RR2 CAST` panel and the `RiftReader API Readiness` panel overlap LuaPad from the foreground: **stacking FAIL**. RIFT's native interface remained visible, and there is no evidence the editor was given key focus.
+- Read-only installed addon source inspection exposed the missed cases: `BotFight` and other addons use `topmost` strata, and `BotFight` / `RiftReaderApiProbe` children use very high frame layers (`999990–999995`). Preview 18's `dialog` context and LuaPad window layer `1` cannot reliably win those overlaps. This is a **source-backed explanation plus observed failure**, not yet proof of how RIFT's renderer orders every peer.
+- Preview 19 adds bounded high-layer child scanning and `topmost` context selection, passes source/mock gates, and is guardedly installed. **Preview 19 live visual acceptance is pending** after Joey separately reloads RIFT.
+
+## Historical Preview 18 physical deployment and acceptance gate
+
+- Preview 17 is the last independently documented **editor-keyboard** baseline (Enter/Tab and ASCII selected-text behavior passed; rollback copies in `backups/luapad-preview17-before-hotcopy-20261104-0939-nativekeys`). Preview 18's physical startup auto-open and failed overlap were observed later. Preserve original addon and account SavedVariables backups.
+- Historical Preview 18 install rule: confirm the installed `luapad/main.lua` and `luapad/RiftAddon.toc` matched Preview 17 before copying. This historical rule applied at Preview 18 installation; **do not rerun it against the current Preview 19 installation**.
 - **Done:** a bounded backup-and-hot-copy of only those two files succeeded, with independent hash verification and rollback receipt above. Do not run `install-preview.ps1` with RIFT active; it deliberately refuses.
-- The updated source will not take effect in the already running game until an **authorized `/reloadui` or the next normal game launch**. Do not take RIFT focus, inject keys or reload without Joey's separate permission.
-- After loading Preview 18, confirm the addon appears **without typing `/lp`**; capture a screenshot containing the version/title and competing RRECollector or other addon. Check LuaPad visually on top, Close, `/lp` re-open/top again, and Enter/Tab in an inert editor string.
+- The Preview 18 code took effect when Joey separately started/reloaded RIFT, as demonstrated by the version 18 screenshot. Subsequent Preview 19 file-copy changes similarly require a separately authorized `/reloadui` or normal launch. Do not take RIFT focus, inject keys or reload without Joey's separate permission.
+- Historical Preview 18 physical test: automatic visibility passed and visual-overlap stacking failed. Continue remaining Close, `/lp` re-open/top again, and inert Enter/Tab regression checks on Preview 19 after Joey's next manual reload.
 - Observe behavior with native dialog opening/closing, after game resize/move, and under the exact physical HWND/PID. Distinguish native dialog occlusion from another addon covering LuaPad.
 - If any error, bring forward failure, stale text focus, or occlusion regression occurs, capture evidence, return to Preview 17 using the guarded rollback copies, and document the observed result.
 

@@ -368,17 +368,18 @@ local function init()
 end
 
 
--- Lift the whole addon context, not just the child window layer. RIFT
--- orders contexts by strata first; a child:SetLayer() alone cannot beat another
--- addon's context. Only promote when explicitly showing LuaPad.
+-- RIFT addon strata outrank numerical layers in lower strata. Installed
+-- BotFight/LibWiki controls use "topmost", while the API Readiness window
+-- uses layer 999990. Preview 18's "dialog" + window layer 1 was insufficient.
 local function bringLuaPadForward()
-	local targetStrata = "dialog"
+	local targetStrata = "topmost"
 	if type(context.GetStrataList) == "function" then
 		local ok, available = pcall(context.GetStrataList, context)
 		if ok and type(available) == "table" then
 			targetStrata = nil
 			for _, name in ipairs(available) do
-				if name == "dialog" then targetStrata = name; break end
+				if name == "topmost" then targetStrata = name; break end
+				if name == "dialog" then targetStrata = name end
 			end
 		end
 	end
@@ -386,33 +387,39 @@ local function bringLuaPadForward()
 		pcall(context.SetStrata, context, targetStrata)
 	end
 
-	-- Peer contexts are published under UI.Context[addon][name][index].
-	-- Only compare peers in our actual strata; traversal and layer are bounded
-	-- so a broken/hostile addon cannot cause an infinite scan or layer race.
+	-- UI.Context[addon][name][index] contains peer contexts; an addon may
+	-- also assign extremely high layers to a child RiftWindow (the installed
+	-- RiftReaderApiProbe and BotFight panels do). Sample both with a hard work
+	-- budget and never traverse our own context/editor hierarchy.
 	local ourStrata
 	if type(context.GetStrata) == "function" then
 		local ok, strata = pcall(context.GetStrata, context)
 		if ok and type(strata) == "string" then ourStrata = strata end
 	end
-	local highest, traversed, seen = 0, 0, {}
+	local highestContext, highestFrame, traversed, seen = 0, 0, 0, {}
 	local function visit(node, depth)
-		if depth > 4 or traversed >= 256 then return end
+		if depth > 7 or traversed >= 1024 then return end
 		local kind = type(node)
-		if kind ~= "table" and kind ~= "userdata" then return end
-		if seen[node] then return end
+		if kind ~= "table" and kind ~= "userdata" or seen[node] then return end
 		seen[node] = true
 		traversed = traversed + 1
-		local ok, getterLayer, getterStrata = pcall(function()
-			return node.GetLayer, node.GetStrata
+		if node == context then return end
+		local ok, getterLayer, getterStrata, getterChildren = pcall(function()
+			return node.GetLayer, node.GetStrata, node.GetChildren
 		end)
 		if ok and type(getterLayer) == "function" and type(getterStrata) == "function" then
-			if node ~= context and ourStrata then
-				local gotLayer, layer = pcall(getterLayer, node)
-				local gotStrata, strata = pcall(getterStrata, node)
-				if gotLayer and gotStrata and strata == ourStrata
-					and type(layer) == "number" and layer == layer
-					and layer >= 0 and layer < 1024 then
-					highest = math.max(highest, math.floor(layer))
+			local gotLayer, layer = pcall(getterLayer, node)
+			local gotStrata, strata = pcall(getterStrata, node)
+			if gotLayer and gotStrata and strata == ourStrata
+				and type(layer) == "number" and layer == layer
+				and layer >= 0 and layer < 2000000 then
+				highestFrame = math.max(highestFrame, math.floor(layer))
+				if layer < 4096 then highestContext = math.max(highestContext, math.floor(layer)) end
+			end
+			if type(getterChildren) == "function" then
+				local gotChildren, children = pcall(getterChildren, node)
+				if gotChildren and type(children) == "table" then
+					for _, child in pairs(children) do visit(child, depth + 1) end
 				end
 			end
 			return
@@ -430,9 +437,23 @@ local function bringLuaPadForward()
 			ours = layer
 		end
 	end
-	local needed = math.min(1024, math.max(10, highest + 1))
-	if ours < needed and type(context.SetLayer) == "function" then
-		pcall(context.SetLayer, context, needed)
+	local neededContext = math.min(4096, math.max(10, highestContext + 1))
+	if ours < neededContext and type(context.SetLayer) == "function" then
+		pcall(context.SetLayer, context, neededContext)
+	end
+	local windowLayer = 0
+	if type(luaPadWindow.GetLayer) == "function" then
+		local ok, layer = pcall(luaPadWindow.GetLayer, luaPadWindow)
+		if ok and type(layer) == "number" and layer == layer and layer >= 0 then
+			windowLayer = layer
+		end
+	end
+	-- The floor outranks the *observed* 999990-999999 child layers even if
+	-- peer child enumeration is unavailable in this client; the cap avoids an
+	-- unlimited race with addons that constantly rewrite their layers.
+	local neededWindow = math.min(2000000, math.max(1000010, highestFrame + 1))
+	if windowLayer < neededWindow and type(luaPadWindow.SetLayer) == "function" then
+		pcall(luaPadWindow.SetLayer, luaPadWindow, neededWindow)
 	end
 end
 
