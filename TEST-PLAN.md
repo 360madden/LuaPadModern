@@ -7,7 +7,7 @@
 - [ ] Confirm the original LuaPad 1.8 and three account SavedVariables copies remain backed up.
 - [x] Run `verify-preview.cjs` from `C:\work\LuaPadModern` (56/56 checks passed) and parse Lua source (9/9 files passed).
 - [x] Back up installed Preview 15 `main.lua` and root TOC; hot-copy only those two files with hash verification. Game exit is **not** required for this incremental update.
-- [ ] In RIFT, when safe, type `/reloadui` to load Preview 16. Record screenshot/version and addon errors.
+- [x] Joey performed `/reloadui` and reported testing the Preview 16 Code Editor on 2026-11-04; Enter and Tab were not working properly. Exact on-screen effect and addon errors have not yet been captured.
 
 ## Runtime gates
 | ID | Action | Expected |
@@ -33,6 +33,12 @@
 | LP-19 | Inspect all seven toolbar actions | One row above editor, even gaps, consistent button skins; no bottom orphan button |
 | LP-20 | Inspect Code Snippets heading | Clear separation from Help/Copy Output, no overlapping text |
 | LP-21 | Inspect section headings | Code Editor, Output, Code Snippets share consistent size and pale-cyan color |
+
+## Live key-input failure — 2026-11-04 (release blocker)
+- **RED / physical RIFT:** After manually using `/reloadui`, Joey reports that neither Enter nor Tab works properly in the LuaPad Code Editor. This overrides the green mock tests; LP-41–LP-46 remain unaccepted.
+- **Evidence gap:** Need to distinguish no insertion, wrong insertion, lost focus, duplicate insertion, or a Lua exception. Do not mark any of those as the confirmed symptom without direct observation.
+- **Leading code-level hypothesis:** Original LuaPad used `inputField.Event:KeyDown(button)` with ASCII 13/9 and `SetKeyFocus(true)`. Preview 15–16 switched to `inputField:EventAttach(Event.UI.Input.Key.Down, ...)`, a different registration path. The mock harness simulated the latter callback directly and never proved native dispatch.
+- **Direct-test prerequisite:** A read-only physical Windows check on 2026-11-04 verified PID 18056 as the exact RIFT client and found its window minimized / not foreground. Before real keyboard or mouse automation, obtain Joey's permission to restore and focus that window and use a scoped input controller; do not interact with gameplay or reload without confirmation.
 
 ## Preview 16 selection replacement acceptance (after /reloadui)
 - [ ] LP-44: Highlight two characters in the editor, press Tab, and confirm the selection is replaced by exactly two spaces (not inserted after the highlighted text).
