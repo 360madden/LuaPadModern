@@ -135,6 +135,37 @@ try {
   check(()=>assert.equal(w9.poll().some(e=>e.event==="matched"),true));
   w9.close();
 
+  // A newly created UTF-16 log may expose the BOM one byte at a time.
+  const f10=filename("utf16-split-bom");
+  fs.writeFileSync(f10,Buffer.from([0xff]));
+  const w10=new LogTailProbe({filePath:f10,nonce});
+  const partialBom=w10.poll();
+  check(()=>assert.equal(partialBom.some(e=>e.event==="file_opened"&&e.encoding===null),true));
+  fs.appendFileSync(f10,Buffer.concat([Buffer.from([0xfe]),Buffer.from(line,"utf16le")]));
+  check(()=>assert.equal(w10.poll().some(e=>e.event==="matched"),true));
+  w10.close();
+
+  // A transient read error during BOM sniffing must be surfaced and retried.
+  const f11=filename("utf16-header-read-error");
+  fs.writeFileSync(f11,Buffer.concat([Buffer.from([0xff,0xfe]),Buffer.from(line,"utf16le")]));
+  const w11=new LogTailProbe({filePath:f11,nonce,fromStart:true});
+  const originalHeaderRead=fs.readSync;
+  let headerFailure;
+  let failHeader=true;
+  try {
+    fs.readSync=function(fd,...args) {
+      if(failHeader&&fd===w11.fileHandle) {
+        failHeader=false;
+        const e=new Error("test BOM EACCES");e.code="EACCES";throw e;
+      }
+      return originalHeaderRead.call(fs,fd,...args);
+    };
+    headerFailure=w11.poll();
+  } finally { fs.readSync=originalHeaderRead; }
+  check(()=>assert.equal(headerFailure.some(e=>e.event==="read_error"&&e.code==="EACCES"),true));
+  check(()=>assert.equal(w11.poll().some(e=>e.event==="matched"),true));
+  w11.close();
+
   console.log(JSON.stringify({schemaVersion:1,ok:true,passed,
     component:"LuaPadModern Log.txt read-only probe",gameTouched:false}));
 }finally{

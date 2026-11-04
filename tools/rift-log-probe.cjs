@@ -51,11 +51,11 @@ function statKey(s) {
 }
 function detectEncoding(fd) {
   const header = Buffer.alloc(2);
-  try {
-    const got = fs.readSync(fd, header, 0, 2, 0);
-    if (got === 2 && header[0] === 0xff && header[1] === 0xfe) return "utf16le";
-    if (got === 2 && header[0] !== 0 && header[1] === 0) return "utf16le";
-  } catch (_) { /* fall back to UTF-8 */ }
+  const got = fs.readSync(fd, header, 0, 2, 0);
+  // A one-byte UTF-16 BOM is ambiguous; wait for the complete header.
+  if (got < 2) return null;
+  if (header[0] === 0xff && header[1] === 0xfe) return "utf16le";
+  if (header[0] !== 0 && header[1] === 0) return "utf16le";
   return "utf8";
 }
 
@@ -157,10 +157,10 @@ class LogTailProbe {
         this.fileHandle = fs.openSync(this.filePath,"r");
         this.fileKey = key;
         this.encoding = detectEncoding(this.fileHandle);
-        this.decoder = new StringDecoder(this.encoding);
+        this.decoder = this.encoding === null ? null : new StringDecoder(this.encoding);
         // Do not replay an existing chat history. New/replaced files must
         // instead be read from byte zero so their first marker is not missed.
-        this.offset = this.fromStart || this.needReadBeginning ? 0 : info.size;
+        this.offset = (this.fromStart || this.needReadBeginning || info.size < 2) ? 0 : info.size;
         this.needReadBeginning = false;
         this.opened = true;
         events.push({event:"file_opened",offset:this.offset,encoding:this.encoding,
@@ -169,6 +169,19 @@ class LogTailProbe {
         this.resetStream();
         this.needReadBeginning = true;
         events.push({event:"read_error",code:String(e.code||"OPEN_FAILED")});
+        return events;
+      }
+    }
+    if (this.decoder === null) {
+      if (info.size < 2) return events;
+      try {
+        this.encoding = detectEncoding(this.fileHandle);
+        if (this.encoding === null) return events;
+        this.decoder = new StringDecoder(this.encoding);
+      } catch(e) {
+        this.resetStream();
+        this.needReadBeginning = true;
+        events.push({event:"read_error",code:String(e.code||"READ_FAILED")});
         return events;
       }
     }

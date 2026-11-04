@@ -1,6 +1,6 @@
 # M2 no-reload RIFT Log.txt tail pilot (2026-11-04)
 
-Status: **working read-only Windows file-tail prototype; 32/32 synthetic regressions and separate two-process append smoke PASS. Actual LuaPad -> RIFT Log.txt flow NOT YET verified in the physical game.**
+Status: **working read-only Windows file-tail prototype; 40/40 synthetic regressions and separate two-process append smoke PASS. Actual LuaPad -> RIFT Log.txt flow NOT YET verified in the physical game.**
 
 Repository: C:\work\LuaPadModern
 
@@ -13,7 +13,7 @@ A current read-only Windows inventory checked the four usual OneDrive/local Docu
 ## Prototype
 
 - [Watcher](../tools/rift-log-probe.cjs): standard Node.js only; follows an exact configured Log.txt path while RIFT is running and waits if the file is absent.
-- [Regression suite](../tools/rift-log-probe-tests.cjs): 32/32 passes for nonce parsing, no stale-log replay, creation, split writes, truncation, UTF-16LE, long-line bounds, no unrelated chat leaks, unknown clock value.
+- [Regression suite](../tools/rift-log-probe-tests.cjs): 40/40 passes for nonce parsing, no stale-log replay, creation, split writes, truncation, UTF-16LE, long-line bounds, no unrelated chat leaks, unknown clock value, transient file errors, split UTF-16 BOM, and header-read retry.
 - [Windows two-process smoke](../tools/rift-log-probe-cli-tests.cjs): a **separate Node watcher process** detected a split marker appended to a synthetic file with an observed **94 ms** append-to-detection interval at 25 ms polling (one sample, not a game latency result).
 - Never opens the file for writing. Ignores unrelated chat content and outputs only probe metadata/nonce; no actual chat lines.
 - Tail reading uses bounded 256 KiB per poll, default 100 ms poll, a 120-second default expiration, and explicit stop/exit code.

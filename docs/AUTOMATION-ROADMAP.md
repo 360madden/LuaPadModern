@@ -53,7 +53,7 @@ After P1 physical acceptance, resume the prior plan: P0 deterministic AI request
 - [x] Mock RIFT context/window/editor getters: 40/40 status assertions and 70/70 router assertions. No focus/stacking setters called.
 - [x] Strict no-shell Node test gate: 39 codec + 40 status + 70 router + 165 slash adapter + 149 LuaPad/Inspector runtime = 463/463, with JSON receipt; see [M2 router/focus checkpoint](M2-ROUTER-FOCUS-CHECKPOINT-2026-11-04.md).
 - [x] Source-only bounded `/lpb v1 health|caps|status` parser and injected clipboard adapter, with 165 fail-closed tests; see [M2 slash transport pilot](M2-SLASH-TRANSPORT-PILOT-2026-11-04.md). Not registered in RIFT.
-- [x] Implement Windows read-only `Log.txt` watcher and 32/32 synthetic tests (fresh-tail, creation, split writes, truncation, encoding and privacy). Usual physical RIFT log paths absent at read-only check; physical `/log` + LuaPad Run probe pending. See [no-reload pilot](M2-LOG-TAIL-NO-RELOAD-PILOT-2026-11-04.md).
+- [x] Implement Windows read-only `Log.txt` watcher and 40/40 synthetic tests (fresh-tail, creation, split writes, truncation, encoding/partial BOM, transient access recovery and privacy). Usual physical RIFT log paths absent at read-only check; physical `/log` + LuaPad Run probe pending. See [no-reload pilot](M2-LOG-TAIL-NO-RELOAD-PILOT-2026-11-04.md).
 - [ ] Confirm a LuaPad `Command.Console.Display` marker actually enters RIFT noncombat `Log.txt` and measure observed freshness without any addon reload; do not equate combat-log half-second flush with noncombat behavior.
 - [ ] Confirm RIFT slash dispatch callback signature in the physical game.
 - [ ] Only then backup/hotcopy, and physically test after separately authorized reload.
@@ -86,7 +86,7 @@ A: In-game Lua/Inspector/router. B: .NET 10 Windows host and UIA. C: Workbridge 
 
 ## Unresolved evidence questions
 
-- Can opt-in `Command.Console.Display` output reach `/log` -> RIFT `Log.txt` with bounded latency and usable format? A read-only 32-case Windows watcher is now built, but the physical `Log.txt` was not present at the usual paths. Historical Python tools tail it; LuaPad Run's intercepted `print` must not be assumed to reach the file.
+- Can opt-in `Command.Console.Display` output reach `/log` -> RIFT `Log.txt` with bounded latency and usable format? A read-only 40-case Windows watcher is now built, but the physical `Log.txt` was not present at the usual paths. Historical Python tools tail it; LuaPad Run's intercepted `print` must not be assumed to reach the file.
 - Do RIFT's server-backed addon messages/storage have any safe use for cross-client collaboration beyond clipboard and SavedVariables? These do **not** directly connect to Workbridge.
 - Which data should come from RIFT Inspect versus separately sourced RR2?
 - What payload sizes and sampling rates remain responsive in-game?
