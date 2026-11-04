@@ -97,6 +97,44 @@ try {
   check(()=>assert.equal(w7.match.serverClockDeltaMs,null));
   w7.close();
 
+  // A transient read failure must not turn already-appended bytes into
+  // 'history' when the stream is reopened at the next poll.
+  const f8=filename("recover-read-error");
+  fs.writeFileSync(f8,"history\n","utf8");
+  const w8=new LogTailProbe({filePath:f8,nonce});
+  w8.poll();
+  fs.appendFileSync(f8,line,"utf8");
+  const originalRead=fs.readSync;
+  let readFailure;
+  try {
+    fs.readSync=function(fd,...args) {
+      if(fd===w8.fileHandle) { const e=new Error("test EACCES");e.code="EACCES";throw e; }
+      return originalRead.call(fs,fd,...args);
+    };
+    readFailure=w8.poll();
+  } finally { fs.readSync=originalRead; }
+  check(()=>assert.equal(readFailure.some(e=>e.event==="read_error"&&e.code==="EACCES"),true));
+  check(()=>assert.equal(w8.poll().some(e=>e.event==="matched"),true));
+  w8.close();
+
+  // The same recovery is needed when the initial file open fails.
+  const f9=filename("recover-open-error");
+  fs.writeFileSync(f9,"history\n","utf8");
+  const w9=new LogTailProbe({filePath:f9,nonce});
+  const originalOpen=fs.openSync;
+  let openFailure;
+  try {
+    fs.openSync=function(filePath,...args) {
+      if(filePath===f9) { const e=new Error("test EACCES");e.code="EACCES";throw e; }
+      return originalOpen.call(fs,filePath,...args);
+    };
+    openFailure=w9.poll();
+  } finally { fs.openSync=originalOpen; }
+  fs.appendFileSync(f9,line,"utf8");
+  check(()=>assert.equal(openFailure.some(e=>e.event==="read_error"&&e.code==="EACCES"),true));
+  check(()=>assert.equal(w9.poll().some(e=>e.event==="matched"),true));
+  w9.close();
+
   console.log(JSON.stringify({schemaVersion:1,ok:true,passed,
     component:"LuaPadModern Log.txt read-only probe",gameTouched:false}));
 }finally{

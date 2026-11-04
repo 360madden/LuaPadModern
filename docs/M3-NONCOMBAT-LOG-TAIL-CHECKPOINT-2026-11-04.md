@@ -16,7 +16,8 @@ Status: **managed source component complete; 31 new synthetic log-reader asserti
 - Added [HostCore.Tests/LogTailTests.cs](../HostCore.Tests/LogTailTests.cs) with 31 synthetic checks for missing/create, nonce isolation, partial line, history suppression, explicit history, unknown timestamp, UTF-8 and UTF-16LE boundaries, replacement/truncation, large lines, invalid parameters and disposal.
 - `node verify-host.cjs`: **113/113 PASS** (82 pre-existing host-core + 31 new log reader).
 - `node verify-bridge.cjs`: **463/463 PASS**.
-- `node tools/rift-log-probe-tests.cjs`: **32/32 PASS**.
+- `node tools/rift-log-probe-tests.cjs`: **36/36 PASS** (four additional fault-injection assertions for transient read/open errors and successful resynchronization).
+- Node watcher reopens from the beginning after transient open/read failures rather than treating potentially new marker bytes as old history. This does not prove physical RIFT log behavior.
 - `node tools/rift-log-probe-cli-tests.cjs`: separate synthetic-process marker observed in **91 ms** at 25 ms poll; **not** RIFT latency.
 - `node verify-preview.cjs`: structural PASS.
 - No RIFT input, UI reload, addon installation or host service changes were made for this M3 slice.

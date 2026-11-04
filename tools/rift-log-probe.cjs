@@ -167,6 +167,7 @@ class LogTailProbe {
           size:info.size});
       } catch(e) {
         this.resetStream();
+        this.needReadBeginning = true;
         events.push({event:"read_error",code:String(e.code||"OPEN_FAILED")});
         return events;
       }
@@ -181,6 +182,7 @@ class LogTailProbe {
       catch(e) {
         events.push({event:"read_error",code:String(e.code||"READ_FAILED")});
         this.resetStream();
+        this.needReadBeginning = true;
         return events;
       }
       if (n === 0) break;
