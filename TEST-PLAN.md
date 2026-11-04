@@ -34,22 +34,22 @@
 | LP-20 | Inspect Code Snippets heading | Clear separation from Help/Copy Output, no overlapping text |
 | LP-21 | Inspect section headings | Code Editor, Output, Code Snippets share consistent size and pale-cyan color |
 
-## Live key-input failure — 2026-11-04 (Preview 16 confirmed; Preview 17 pending)
+## Live key-input investigation — 2026-11-04 (Preview 16 failed; Preview 17 passed)
 - **RED / physical RIFT Preview 16:** Editor accepted a typed `a`; Enter then `b` displayed `ab` on one line; Tab then `c` displayed `abc` without spaces. Both key injections completed against PID 18056 / HWND 0x640A18 while the game remained running.
 - **Screenshots:** Enter failure screenshot SHA256 `10f9dd1e0476912e2b57793dd0d49584c2359ffe71d7adc97cde96994f8367d5`; Tab failure screenshot SHA256 `91708e300b595e2d94801585c67262d9225525fa5850a82730df89090693c237`, captured through the pinned RIFT visual gate.
-- **Leading cause:** Preview 15–16 used generic `Event.UI.Input.Key.Down` attachment on a RiftTextfield. The original LuaPad used `inputField.Event:KeyDown(button)` with ASCII 13 and 9. Preview 17 restores that native registration, preserving selection replacement and focus restoration. Actual Preview 17 behavior remains unverified until loaded.
-- **Reload boundary:** The user authorized editor mouse/keyboard tests but excluded automated `/reloadui`; do not reload the active client without new permission.
+- **Root-cause correction verified live:** Preview 15–16 used a generic `Event.UI.Input.Key.Down` attachment on a RiftTextfield, whereas the original LuaPad used `inputField.Event:KeyDown(button)` for ASCII 13/9. Preview 17 restored the native registration, and both special keys now work in the physical client.
+- **Authorized reload:** After explicitly approving the change of focus and a single `/reloadui`, Joey authorized the assistant to reload and retest. LuaPad title showed `v2.0.0-preview17`; the RIFT process remained running.
 
-## Preview 17 physical keyboard acceptance (after authorized /reloadui)
-- [ ] LP-47: Confirm title `LuaPad v2.0.0-preview17`, editor still editable, no addon startup error.
-- [ ] LP-48: Type `a`, press Enter, type `b` using guarded physical key injection; screenshot must show `a` and `b` on distinct lines.
-- [ ] LP-49: Press Tab, type `c` in the editor; screenshot must show two spaces before `c` and normal typing afterward.
-- [ ] LP-50: Move cursor between characters, repeat Enter/Tab, verify no duplication, no focus loss and correct cursor position.
+## Preview 17 physical keyboard acceptance — passed after authorized /reloadui
+- [x] LP-47: Title `LuaPad v2.0.0-preview17` visible after reload; editor editable and addon window opened normally.
+- [x] LP-48: Assistant typed `a`, pressed Enter, typed `b`; screenshot shows two distinct lines.
+- [x] LP-49: Assistant pressed Tab and typed `c` on the second line; screenshot shows `b  c`, with two spaces and normal typing intact.
+- [ ] LP-50: The mid-line selected-text Enter case passed (`abcd` with selected `cd` became `ab\nX`); a separate non-selection mid-line Tab cursor test remains pending. Combined main keyboard acceptance screenshot SHA256 `b41d508b4fe84a79c5913de873ede38b9e49e3d825f49b975e52cbf64f5bcee8`.
 
-## Preview 16 selection replacement acceptance (after /reloadui)
-- [ ] LP-44: Highlight two characters in the editor, press Tab, and confirm the selection is replaced by exactly two spaces (not inserted after the highlighted text).
-- [ ] LP-45: Highlight two characters, press Enter, and confirm the selection becomes exactly one newline; no duplicate text or persistent selection.
-- [ ] LP-46: After LP-44/45, type a normal letter and confirm cursor/selection state is cleared and typing is intact.
+## Preview 16 selection replacement acceptance (verified in Preview 17 where noted)
+- [ ] LP-44: Tab after selecting all editor text replaced it with two spaces, and normal typing appended `Z` (screenshot SHA256 `d53278725e3297447624ad50e2e4ab7e04d147ddebd0488bf8d32588441441c0`); targeted two-character Tab selection still pending.
+- [x] LP-45: In `abcd`, select `cd`, press Enter then `X`; screenshot shows `ab` followed by `X` on a new line, with no selected characters left (SHA256 `1d9b79f2b09c16ebf1a3f2c908da99bb39799068ef70e80d73603a2a05f80b1d`).
+- [x] LP-46: Normal typing after the selected-text Enter/Tab handlers continued; `X` landed at the restored cursor. All temporary editor test text was cleared without saving a snippet.
 
 ## Preview 15 LuaPad editor key handling acceptance (after /reloadui)
 - [ ] LP-41: In the LuaPad editor, position the cursor between two letters and press Tab. Exactly two spaces should be inserted at the cursor; characters after it remain intact.
