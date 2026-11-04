@@ -15,7 +15,7 @@ P2: performance-tuned live streaming, advanced editor and debugging integrations
 | M0 Baseline | Preserve Preview17 and backups | Verified physical Enter/Tab; Git clean; rollback | Mostly complete; some editor edge cases |
 | M1 Contract | Versioned schema, request IDs, statuses/errors, fixtures, tests, architecture | Contract checks and old tests green; Git commit | Complete (contract-only; not live) |
 | M2 Addon bridge | Pure Lua serializer, command router, bounded slash adapter, API discovery, compile-only probes | Physical RIFT produces matching structured result | In progress: 442/442 source/mock assertions; slash registration and live bridge pending |
-| M3 Windows host | C# .NET10 background host, WPF shell, target validation, clipboard route | Host request/result verified with RIFT; no coordinate drift | Not started |
+| M3 Windows host | C# .NET10 background host, WPF shell, target validation, clipboard route | Host request/result verified with RIFT; no coordinate drift | In progress: 82/82 pure managed host-core tests; no live host/Win32 link |
 | M4 Workbridge MCP | Typed LuaPad tools, output schemas, receipts, bounded timeouts | MCP tool -> RIFT -> structured result proven | Not started |
 | M5 Telemetry | Snapshots, event buffers, opt-in RR2 read-only source with provenance | Freshness and performance measured | Not started |
 | M6 UX | In-game tabs, search, history, professional Windows GUI, UIA IDs | Mouse/keyboard/UIA and screenshot acceptance | Not started |
@@ -55,6 +55,15 @@ P2: performance-tuned live streaming, advanced editor and debugging integrations
 - [x] Source-only bounded `/lpb v1 health|caps|status` parser and injected clipboard adapter, with 165 fail-closed tests; see [M2 slash transport pilot](M2-SLASH-TRANSPORT-PILOT-2026-11-04.md). Not registered in RIFT.
 - [ ] Confirm RIFT slash dispatch callback signature in the physical game.
 - [ ] Only then backup/hotcopy, and physically test after separately authorized reload.
+
+## M3 Windows host source-only slice
+
+- [x] Confirm local .NET SDK 10.0.302 available.
+- [x] Implement pure managed correlated JSON/clipboard freshness verifier with duplicate-key/size checks.
+- [x] Implement read-only exact PID/HWND/start-time and fresh-geometry/focus/occlusion readiness gates.
+- [x] Strict `node verify-host.cjs`: 82/82 host-core tests; [checkpoint](M3-HOST-CORE-CHECKPOINT-2026-11-04.md).
+- [ ] Implement actual Windows process/HWND observer, foreground-aware input dispatch, clipboard sampler/receipts, recovery.
+- [ ] WPF desktop/tray shell with stable UI Automation IDs, then physically validate with RIFT.
 
 ## Cross-cutting UI focus gate
 

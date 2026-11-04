@@ -11,6 +11,7 @@ A polished RIFT Lua development environment, optimized for human developers and 
 - RIFT LuaPad v2.0.0-preview17: editor Enter/Tab and ASCII selection physically verified.
 - Addon already has editor/Run, Inspector, snippets, output, native clipboard copy, slash commands, startup notices.
 - Workbridge reads/writes the Windows Git repo and runs developer commands; Windows desktop window discovery/screenshot tools exist.
+- A .NET 10 pure managed HostCore source slice now validates correlated result JSON and read-only target/UI evidence; 82/82 mock checks passed. It has **no Win32 discovery, input, live clipboard, WPF shell or MCP tools yet**. See [M3 source-only checkpoint](M3-HOST-CORE-CHECKPOINT-2026-11-04.md).
 - RIFT API documentation lists Inspect, Command, events and saved-variable hooks, but a general Lua network listener/arbitrary file streaming is not established. Treat such transport as unproven.
 - WinApp UI Automation should target the planned native Windows dashboard. Custom-drawn RIFT controls may require pinned HWND, screenshots, guarded mouse/keys.
 

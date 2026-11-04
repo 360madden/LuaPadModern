@@ -11,6 +11,8 @@ The M1 contract is an initial interoperable interface specification, **not yet a
 
 **M2 source-only bridge:** [codec](Bridge/codec.lua), [read-only router](Bridge/router.lua), [UI status probe](Bridge/ui_status.lua) and [bounded slash adapter pilot](Bridge/slash.lua) implement correlated JSON, safe health/capability queries, and independent visibility/layer/focus observations. Run `node verify-bridge.cjs` for the strict **442-assertion** headless gate. See the [codec checkpoint](docs/M2-CODEC-CHECKPOINT-2026-11-04.md), [router/focus handoff](docs/M2-ROUTER-FOCUS-CHECKPOINT-2026-11-04.md) and [slash transport pilot](docs/M2-SLASH-TRANSPORT-PILOT-2026-11-04.md). These modules are **not yet loaded or registered by RIFT**, `/lpb` is **not yet available in game**, and no Windows/MCP transport is live.
 
+**M3 source-only .NET 10 host core:** [result validator](HostCore/BridgeResultValidator.cs) and [readiness gates](HostCore/HostReadinessGate.cs) reject stale/mismatched JSON, changed HWND/PID/geometry, missing foreground, occlusion and editor focus. Run `node verify-host.cjs` for the strict **82-assertion** host gate. See [host-core checkpoint](docs/M3-HOST-CORE-CHECKPOINT-2026-11-04.md). These classes perform **no Win32 or game interactions**, and the Windows desktop/clipboard/MCP service is not yet built.
+
 Source: copied from installed LuaPad 1.8 on 2026-11-03. Preview 1 was installed to physical RIFT AddOns at approximately 14:58 ET on 2026-11-03, after the game exited normally. Original addon and three account SavedVariables files were backed up. See DEPLOYMENT-2026-11-03.md. Preview 2 and Preview 3 are incremental two-file updates hot-copied into the active addon while RIFT remains open; `/reloadui` is needed to load updated Lua code.
 
 ## Changes
