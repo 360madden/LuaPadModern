@@ -186,6 +186,7 @@ internal static class Program
         Check("editor gate inherits resize refusal", Editor(fresh with {
             Client = bounds with { Height = 1080 } }, evidence) == "CLIENT_BOUNDS_CHANGED");
 
+        LogTailTests.Run(Check);
         Console.WriteLine($"HostCore source-only checks: {_passed} passed");
     }
 }

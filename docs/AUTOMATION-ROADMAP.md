@@ -15,7 +15,7 @@ After P1 physical acceptance, resume the prior plan: P0 deterministic AI request
 | M0 Baseline | Preserve Preview17 verified editor behavior and rollback; Preview20 centered startup/title | Physical auto-open/stacking screenshot, centering, Enter/Tab regression | Preview19 stacking user-reported pass; Preview20 guarded installed and mock-verified; live center/title pending |
 | M1 Contract | Versioned schema, request IDs, statuses/errors, fixtures, tests, architecture | Contract checks and old tests green; Git commit | Complete (contract-only; not live) |
 | M2 Addon bridge | Pure Lua serializer, command router, bounded slash adapter, API discovery, compile-only probes | Physical RIFT produces matching structured result | In progress: 463/463 source/mock assertions; slash registration and live bridge pending; `/log` outbound pilot proposed |
-| M3 Windows host | C# .NET10 background host, WPF shell, target validation, clipboard route | Host request/result verified with RIFT; no coordinate drift | In progress: 82/82 pure managed host-core tests; no live host/Win32 link |
+| M3 Windows host | C# .NET10 background host, WPF shell, target validation, clipboard route | Host request/result verified with RIFT; no coordinate drift | In progress: 113/113 managed host-core checks incl. 31 log-tail tests; no live host/Win32 link |
 | M4 Workbridge MCP | Typed LuaPad tools, output schemas, receipts, bounded timeouts | MCP tool -> RIFT -> structured result proven | Not started |
 | M5 Telemetry | Snapshots, event buffers, opt-in RR2 read-only source with provenance | Freshness and performance measured | Not started |
 | M6 UX | In-game tabs, search, history, professional Windows GUI, UIA IDs | Mouse/keyboard/UIA and screenshot acceptance | Not started |
@@ -63,7 +63,9 @@ After P1 physical acceptance, resume the prior plan: P0 deterministic AI request
 - [x] Confirm local .NET SDK 10.0.302 available.
 - [x] Implement pure managed correlated JSON/clipboard freshness verifier with duplicate-key/size checks.
 - [x] Implement read-only exact PID/HWND/start-time and fresh-geometry/focus/occlusion readiness gates.
-- [x] Strict `node verify-host.cjs`: 82/82 host-core tests; [checkpoint](M3-HOST-CORE-CHECKPOINT-2026-11-04.md).
+- [x] Implement managed read-only `Log.txt` tailer with nonce matching, split UTF-8/UTF-16LE, truncation and replacement detection (31 synthetic cases); [checkpoint](M3-NONCOMBAT-LOG-TAIL-CHECKPOINT-2026-11-04.md).
+- [x] Strict `node verify-host.cjs`: 113/113 host-core tests; [checkpoint](M3-HOST-CORE-CHECKPOINT-2026-11-04.md).
+- [ ] After physical `/log` acceptance, host a bounded opt-in poll service with receipts; no background service is running now.
 - [ ] Implement actual Windows process/HWND observer, foreground-aware input dispatch, clipboard sampler/receipts, recovery.
 - [ ] WPF desktop/tray shell with stable UI Automation IDs, then physically validate with RIFT.
 

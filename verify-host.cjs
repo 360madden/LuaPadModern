@@ -10,11 +10,11 @@ const run = spawnSync(dotnet,
     timeout:90000,maxBuffer:2*1024*1024});
 const output=String(run.stdout||"")+"\n"+String(run.stderr||"");
 const ok=!run.error && run.status===0 &&
-  output.includes("HostCore source-only checks: 82 passed") &&
+  output.includes("HostCore source-only checks: 113 passed") &&
   !/(^|\n)FAIL\b|Unhandled exception|error CS\d+|stack traceback:/.test(output);
 console.log(JSON.stringify({
   schemaVersion:1,component:"LuaPadModern.HostCore",sourceOnly:true,
-  assertions:82,ok
+  assertions:113,ok
 }));
 if (!ok) {
   console.error("Host source-only gate failed; process="+String(run.status)+
