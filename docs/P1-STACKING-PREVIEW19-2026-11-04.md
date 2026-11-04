@@ -1,8 +1,12 @@
 # LuaPadModern P1 — physical overlap correction candidate (Preview 19)
 
 Date: 2026-11-04. Project: `C:\work\LuaPadModern`.
-Status: **Preview 18 physical auto-open PASS / stacking FAIL. Preview 19 source and installed-byte PASS; physical visual acceptance PENDING.**
+Status when first written: **Preview 18 auto-open PASS / stacking FAIL; Preview 19 source and installed-byte PASS; physical visual acceptance then PENDING.** Subsequent outcome recorded below.
 Owner priority: P1, ahead of M2–M7 host/MCP features.
+
+## Later Preview 19 in-game outcome (2026-11-04)
+
+Joey explicitly reported **"ok its not below other layers now"** after the stacking revision. This is user-confirmed improvement in the real game and supersedes this document's earlier pending status; no new screenshot was supplied at that moment. He then requested centering and his author credit, delivered as Preview 20 separately; this checkpoint remains the historical Preview 19 release record. Native dialog interactions and focus checks remain open.
 
 ## User-supplied physical evidence
 
@@ -64,7 +68,7 @@ Backup path: `C:\work\LuaPadModern\backups\luapad-preview19-before-hotcopy-20261
 
 **No RIFT focus, game keyboard/mouse input, `/reloadui`, game restart or SavedVariables write occurred in this Preview 19 release/deployment workflow.** The running game continues using Preview 18 until Joey independently reloads RIFT UI or normally launches the game.
 
-## Next action and live acceptance test (not yet passed)
+## Historical follow-up checklist (partly superseded by later user report)
 
 1. **Only when convenient during safe gameplay**, Joey enters `/reloadui` in RIFT or restarts the game normally; no assistant-initiated input without Joey's separate permission.
 2. Confirm the title says `LuaPad v2.0.0-preview19` and LuaPad appears automatically **without `/lp`**.

@@ -112,7 +112,7 @@ Library = { LibSimpleWidgets = {
   SetBorder = function(view, ...) view._border = { ... } end,
 }}
 Inspect = { Addon = { Detail = function(name)
-  return { toc = { Version = name == "Inspector" and "1.9.0-preview5" or name == "LuaPad" and "2.0.0-preview19" or "?" } }
+  return { toc = { Version = name == "Inspector" and "1.9.0-preview5" or name == "LuaPad" and "2.0.0-preview20" or "?" } }
 end }}
 local registered = {}
 Command = {
@@ -355,6 +355,8 @@ assert(loadfile("main.lua"))()
 local lpContext = frames.LuaPadContext
 local lpWindow = frames.LuaPadluaPadWindow
 local lpEditor = frames.LuaPadInputField
+check("LuaPad window centered on current UIParent", lpWindow._point and lpWindow._point[1] == "CENTER" and lpWindow._point[2] == UIParent and lpWindow._point[3] == "CENTER" and lpWindow._point[4] == 0 and lpWindow._point[5] == 0)
+check("LuaPad title includes Joey Delfierro author", lpWindow._title == "LuaPad v2.0.0-preview20 | by Joey Delfierro")
 check("LuaPad opens immediately on startup without slash", lpWindow:GetVisible() == true)
 check("LuaPad context promoted to topmost strata", lpContext:GetStrata() == "topmost")
 check("LuaPad context outranks another topmost addon", lpContext:GetLayer() > otherTopmost:GetLayer())
@@ -383,6 +385,7 @@ firstFrame()
 check("first-frame callback never repeats after detaching", lpContext:GetLayer() < laterTopmost:GetLayer())
 registered.lp[1][1]()
 check("/lp reopens hidden LuaPad", lpWindow:GetVisible() == true)
+check("/lp keeps author credit in window title", lpWindow._title == "LuaPad v2.0.0-preview20 | by Joey Delfierro")
 check("/lp re-promotes above newly raised addon", lpContext:GetLayer() > laterTopmost:GetLayer())
 check("/lp re-promotes window above later high-layer addon", lpWindow:GetLayer() > laterWindow:GetLayer())
 local lpOutput = frames.LuaPadOutputField

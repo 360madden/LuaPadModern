@@ -26,9 +26,11 @@ A polished RIFT Lua development environment, optimized for human developers and 
 
 Request: AI/MCP -> Workbridge -> Windows Host -> exact verified game window -> short, versioned LuaPad command.
 
-Result: LuaPad API/Run -> structured envelope -> verified game-to-host transport (M2 pilot: clipboard through existing Copy Output) -> host validates IDs and timestamps -> MCP structured result.
+Result: LuaPad API/Run -> structured envelope -> verified game-to-host transport (**clipboard for explicit queries; candidate opt-in `/log` to `Log.txt` for asynchronous event/telemetry streaming**) -> host validates IDs and timestamps -> MCP structured result.
 
-High-frequency streaming requires separate proof; clipboard is a starting route for deliberate queries, not a proven high-frequency telemetry channel.
+High-frequency streaming requires separate proof. **`/log` candidate:** historical RIFT tooling tails `Documents\RIFT\Log.txt` after the player enables `/log`; RIFT's `Command.Console.Display` may emit bounded, tagged messages to this log, but this needs a real in-game flush/fidelity/latency test. LuaPad's Run `print` is intercepted into its own output pane and is NOT evidence of log delivery. The host must handle log rotation/truncation, message chunks, requests/sessions, duplicates, and queue backpressure. **Inbound** still requires gated slash/UI input or another demonstrated path; `/log` is one-way.
+
+RIFT `Command.Message.Send/Broadcast` and `Command.Storage.Get/Set/List` are **server-backed game-client communications/storage**, not arbitrary Windows filesystem, direct network socket or MCP access. Clipboard remains the proven in-addon outbound API and SavedVariables a delayed persistence channel. No general-purpose addon TCP/HTTP API is verified.
 
 ## Bridge v1 contract
 
@@ -90,5 +92,8 @@ M1 creates schemas, examples, smoke tests and architecture docs. It does not tou
 ## Primary references
 
 - Historical RIFT addon API: https://www.seebs.net/rift/pts/index.html
+- RIFT console display and clipboard API: https://github.com/chrisbecke/Igor/wiki/Command.Console.Display and https://github.com/chrisbecke/Igor/wiki/Command.CopyToClipboard
+- RIFT `/log` host-tail precedent: https://github.com/Bamux/RiftEventTracker and https://github.com/Bamux/Rift-Raid-Alert
+- RIFT message and storage APIs: https://github.com/chrisbecke/Igor/wiki/Command.Message.Send and https://github.com/chrisbecke/Igor/wiki/Command.Storage.Get
 - MCP typed tools/structured results: https://modelcontextprotocol.io/specification/2025-11-25/server/tools
 - Microsoft WinApp UI Automation: https://learn.microsoft.com/windows/apps/dev-tools/winapp-cli/ui-automation

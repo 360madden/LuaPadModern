@@ -1,5 +1,5 @@
 # LuaPadModern UI stacking, keyboard focus and automation readiness
-Date: 2026-11-04. Status: **Preview 18 physical auto-open PASS but overlap FAIL; Preview 19 source/mock and guarded deployment PASS, physical overlap acceptance pending**.
+Date: 2026-11-04. Status: **Preview 18 auto-open PASS / overlap FAIL; Joey later confirmed Preview 19 is no longer behind peer addons (user report); Preview 20 centered startup/title source/mock/deployment PASS, physical recheck pending**.
 
 ## Why this is a bridge concern
 
@@ -38,7 +38,7 @@ Historical RIFT addon API documentation (verify against RIFT Live):
 - Read-only installed addon source inspection confirms `BotFight` uses `SetStrata("topmost")` for cast/rack contexts and child `SetLayer(999990..999995)`; `RiftReaderApiProbe/readiness.lua` uses `window:SetLayer(999990)`. Other installed `RRECollector` and `LibWiki` controls use `topmost` contexts. Preview 18 chose only `dialog` and window layer 1.
 - Preview 19 preferentially selects supported `topmost`, scans up to 1024 peer hierarchy nodes and seven levels via `UI.Context` and `GetChildren`, and sets a bounded LuaPad window layer above observed high-layer frames (floor `1000010`, cap `2000000`). The first-frame one-shot and manual `/lp` raise are retained; the editor is not automatically focused.
 - Mocked overlap regression now includes a topmost competing context, child layers up to `999995`, a default-strata readiness window at `999990`, and a late-added topmost frame. The **146 runtime, 460 bridge, 57 structural and 82 host** gates pass. Physical AddOns Preview 19 files and Preview 18 rollback copies were independently SHA256-verified after guarded hot-copy; no game focus/reload was performed by the installer.
-- **Open:** whether RIFT Live actually renders LuaPad above competing addons after Joey manually reloads Preview 19. Layer introspection alone cannot prove pixel-level visual order; request a fresh screenshot and test native dialog behavior separately.
+- **User report after Preview 19:** Joey stated LuaPad is no longer below other addon layers. This is positive physical interaction evidence, but without a newly provided screenshot or quantified occlusion check. Native dialogs and further overlap scenarios remain open. Preview 20 centers the editor with `SetPoint("CENTER", UIParent, "CENTER", 0, 0)`; live placement pending next UI load.
 
 ## Proposed source-of-truth API
 
@@ -67,8 +67,8 @@ Windows host separately supplies windowForeground, pinned HWND/PID, screenshot e
 
 | Scenario | Evidence required | State |
 | --- | --- | --- |
-| Automatic opening on RIFT startup/reload, without /lp | Fresh screenshot, version, visible editor, no editor key focus | **Preview18 live visible PASS**; Preview19 reload pending |
-| LuaPad opened with another addon above | Before/after screenshot, GetStrata/GetLayer, front order | **Preview18 live FAIL**; Preview19 enhanced mock PASS, live pending |
+| Automatic opening on RIFT startup/reload, without /lp | Fresh screenshot, version, visible editor, no editor key focus | **Preview18 live visible PASS**; Preview19 stacking user-reported PASS; Preview20 centered state pending |
+| LuaPad opened with another addon above | Before/after screenshot, GetStrata/GetLayer, front order | **Preview18 live FAIL**; Preview19 enhanced mock PASS and Joey-reported physical correction; independent fresh screenshot pending |
 | /lp used after native dialog interaction | Consistent z-order promotion without concealing native dialogs | Pending |
 | Editor click, Enter, Tab | Exact HWND foreground; editor focus true; actual text and screenshot | Pending; Preview17 basic keys passed |
 | Window resize or move | Fresh client bounds, no old-coordinate action | Pending |
@@ -80,8 +80,8 @@ Windows host separately supplies windowForeground, pinned HWND/PID, screenshot e
 
 1. Add mockable ui.status observation without layering mutations.
 2. Test hidden/no-focus, visible-but-occluded and foreground-without-editor-focus.
-3. Preview 18 auto-opens in physical RIFT but failed against real topmost/high-layer peer addons. Preview 19 adjusts strata, child-window layer and first-frame + `/lp` activation; physical Preview 19 verification pending. Explicit editor-focus activation remains separate.
+3. Preview 18 auto-opened but failed overlap. Preview 19 adjusts topmost layering and Joey later reported stacking corrected. Preview 20 centers the window and credits Joey. Live centered-position acceptance and explicit editor-focus activation remain separate.
 4. Add Windows-host readiness gate correlating pinned HWND/PID, addon state and a fresh screenshot.
 5. Physically test overlap/key injection before exposing Workbridge tools as live-capable.
 
-**Evidence boundary:** Preview 18 physically failed stacking, and Preview 19 has only source/mock and installed-byte evidence. This document does **not** yet claim the physical RIFT z-order bug is fixed.
+**Evidence boundary:** Preview 18 physically failed stacking; Preview 19's improvement is backed by Joey's affirmative in-game report, with no independent refreshed screenshot. Preview 20 centering/title are only source/mock and installed-byte confirmed until Joey reloads UI or relaunches normally. Visual position, stacking, Windows foreground, and editor key focus must be tracked independently.

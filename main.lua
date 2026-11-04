@@ -1,7 +1,8 @@
 --[[
 	Project: LuaPad
 	Current version: RiftAddon.toc (displayed dynamically at runtime)
-	Author: NerfedWar (http://www.nerfedwar.net - nerfed.war@gmail.com)
+	Original author: NerfedWar (http://www.nerfedwar.net - nerfed.war@gmail.com)
+	LuaPadModern author/maintainer: Joey Delfierro (GitHub 360madden)
 	
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -137,6 +138,10 @@ local function currentVersion()
 	return "unknown"
 end
 
+local function currentTitle()
+	return "LuaPad v" .. currentVersion() .. " | by Joey Delfierro"
+end
+
 -- RIFT's Lua 5.1 string indices are bytes, not UTF-8 characters. Trim
 -- preview text only at complete codepoint boundaries.
 local function utf8BytePrefix(value, maxBytes)
@@ -204,8 +209,9 @@ local function init()
 	
 	luaPadWindow:SetWidth(840)
 	luaPadWindow:SetHeight(600)
-	luaPadWindow:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 100, 100)
-	luaPadWindow:SetTitle("LuaPad v" .. currentVersion())
+	-- Center relative to RIFT's UI parent; the anchor follows client resizes.
+	luaPadWindow:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+	luaPadWindow:SetTitle(currentTitle())
 	luaPadWindow:SetLayer(1)
 	luaPadWindow:SetAlpha(0.98)
 	
@@ -459,7 +465,7 @@ end
 
 -- Showing on startup must not steal the user's gameplay keyboard focus.
 local function showLuaPad()
-	luaPadWindow:SetTitle("LuaPad v" .. currentVersion())
+	luaPadWindow:SetTitle(currentTitle())
 	bringLuaPadForward()
 	luaPadWindow:SetVisible(true)
 end

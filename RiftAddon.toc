@@ -9,13 +9,14 @@ Name = {
 NameShort = "LuaPad"
 
 Description = {
-  English = "LuaPad 2.0 preview: script diagnostics, clipboard output and redesigned Inspector."
+  English = "LuaPadModern by Joey Delfierro: Lua diagnostics and developer utilities; based on LuaPad by NerfedWar."
 }
 
-Author = "NerfedWar"
-Website = "http://www.nerfedwar.net"
-Version = "2.0.0-preview19"
+Author = "Joey Delfierro (360madden); original LuaPad by NerfedWar"
+Website = "https://github.com/360madden"
+Version = "2.0.0-preview20"
 
+-- Retained for upstream provenance; maintainer contact has not been published.
 Email = "nerfed.war@gmail.com"
 
 Environment = "4.4"
