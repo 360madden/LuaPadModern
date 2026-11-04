@@ -4,11 +4,12 @@
 
 - [Architecture](docs/AUTOMATION-ARCHITECTURE.md) — RIFT addon, planned .NET 10 Windows Host, Workbridge MCP, and telemetry boundaries.
 - [Roadmap](docs/AUTOMATION-ROADMAP.md) — gated milestones M0–M7 and physical acceptance requirements.
+- [UI focus/z-order gate](docs/UI-FOCUS-AUTOMATION-GATE-2026-11-04.md) — independent Windows foreground, RIFT layering and editor key-focus checks; physical overlap test pending.
 - [Bridge v1 JSON Schema](contracts/bridge-envelope-v1.schema.json), sample request/result/error envelopes, and `node contracts/verify-contract.cjs` smoke checks.
 
 The M1 contract is an initial interoperable interface specification, **not yet a live game-to-MCP bridge**. Preview17 remains the verified physical-client baseline.
 
-**M2 isolated codec (development-only):** [Bridge/codec.lua](Bridge/codec.lua) and [36-case headless test](bridge-codec-tests.lua) implement bounded Lua 5.1 JSON/result encoding. See the [checkpoint](docs/M2-CODEC-CHECKPOINT-2026-11-04.md). The module is **not** loaded into the RIFT addon yet.
+**M2 source-only bridge:** [codec](Bridge/codec.lua), [read-only router](Bridge/router.lua) and [UI status probe](Bridge/ui_status.lua) implement bounded JSON/results, safe health/capability queries, and independent visibility/layer/focus observations. Run `node verify-bridge.cjs` from this repository for the strict **277-assertion** headless gate. See the [initial codec checkpoint](docs/M2-CODEC-CHECKPOINT-2026-11-04.md) and [router/focus handoff](docs/M2-ROUTER-FOCUS-CHECKPOINT-2026-11-04.md). These modules are **not yet loaded by RIFT**, and no Windows/MCP transport is live.
 
 Source: copied from installed LuaPad 1.8 on 2026-11-03. Preview 1 was installed to physical RIFT AddOns at approximately 14:58 ET on 2026-11-03, after the game exited normally. Original addon and three account SavedVariables files were backed up. See DEPLOYMENT-2026-11-03.md. Preview 2 and Preview 3 are incremental two-file updates hot-copied into the active addon while RIFT remains open; `/reloadui` is needed to load updated Lua code.
 

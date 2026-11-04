@@ -155,6 +155,8 @@ function Codec.makeResult(req, status, payload, opts)
   opts = opts or {}
   if type(opts) ~= "table" then return nil, "INVALID_ARGUMENTS" end
   if opts.truncated ~= nil and type(opts.truncated) ~= "boolean" then return nil, "INVALID_ARGUMENTS" end
+  local transports = {clipboard=true, ["win32-input"]=true, uia=true, ipc=true, rr2=true}
+  if opts.transport ~= nil and not transports[opts.transport] then return nil, "INVALID_ARGUMENTS" end
   if opts.addonVersion ~= nil and (type(opts.addonVersion) ~= "string"
       or #opts.addonVersion > 64 or not validUtf8(opts.addonVersion)) then
     return nil, "INVALID_ARGUMENTS"
@@ -182,8 +184,11 @@ function Codec.makeResult(req, status, payload, opts)
     source = source,
     payload = payload or {},
     status = status,
-    meta = {truncated = opts.truncated == true, transport = "clipboard"}
+    meta = {truncated = opts.truncated == true}
   }
+  -- The encoder cannot know how bytes are delivered. Stamp transport only
+  -- after that route has genuinely been selected, not merely anticipated.
+  if opts.transport then envelope.meta.transport = opts.transport end
   if status == "error" then
     envelope.error = {code = opts.error.code, message = opts.error.message}
   end

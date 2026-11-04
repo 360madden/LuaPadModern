@@ -38,8 +38,8 @@ Source of truth: ../contracts/bridge-envelope-v1.schema.json and examples beside
 - Host generates requestId and sessionId; addon echoes them unchanged.
 - Requests have no status/error. Results/events have status (ok, error, partial) and meta.truncated.
 - Error includes machine-readable code and human-readable message.
-- Initial error taxonomy: INVALID_ARGUMENTS, UNSUPPORTED_OPERATION, UNSUPPORTED_VERSION, TARGET_UNAVAILABLE, TARGET_CHANGED, GAME_NOT_READY, LUA_COMPILE_ERROR, LUA_RUNTIME_ERROR, RESULT_MISMATCH, TRANSPORT_TIMEOUT, CLIPBOARD_CHANGED, OUTPUT_TRUNCATED, INTERNAL_ERROR.
-- Windows host adds receipt time, transport, evidence hash and source-age metadata; these are not in-game measurements.
+- Initial error taxonomy: INVALID_ARGUMENTS, UNSUPPORTED_OPERATION, UNSUPPORTED_VERSION, DUPLICATE_REQUEST_CONFLICT, TARGET_UNAVAILABLE, TARGET_CHANGED, GAME_NOT_READY, LUA_COMPILE_ERROR, LUA_RUNTIME_ERROR, RESULT_MISMATCH, TRANSPORT_TIMEOUT, CLIPBOARD_CHANGED, OUTPUT_TRUNCATED, INTERNAL_ERROR. Planned UI host errors: WINDOW_NOT_FOREGROUND, LUAPAD_OCCLUDED, EDITOR_NOT_FOCUSED, UI_UNVERIFIED.
+- Windows host adds receipt time, actual transport, evidence hash and source-age metadata; these are not in-game measurements. The source-only Lua encoder must not mark clipboard transport until a real copy path is exercised.
 - Check exact response requestId/sessionId/operation; reject stale, ambiguous or incomplete results.
 - Do not automatically repeat an uncertain non-idempotent Lua execution.
 - Preserve UTF-8 and size limits. No silent partial JSON parsing.
@@ -49,7 +49,9 @@ Source of truth: ../contracts/bridge-envelope-v1.schema.json and examples beside
 
 | Operation | Owner | Notes |
 | --- | --- | --- |
-| health | addon + host | readiness/version |
+| health | addon + host | readiness/version; source router implemented, no live transport |
+| bridge.capabilities | addon | supported operations; source router implemented |
+| ui.status | addon | visibility/layer/strata/editor focus; source-only read-only probe |
 | api.search | addon | API catalog discovery |
 | api.inspect | addon | expression evaluation can invoke an API |
 | lua.validate | addon | compile only |
@@ -70,6 +72,9 @@ WPF desktop dashboard: connection status, searchable API browser, script history
 States: queued -> target-verified -> dispatched -> awaiting-result -> validated, or terminal rejected/timeout/unknown.
 
 - Pin exact PID/HWND/process start and verify game readiness before input.
+- Treat Windows foreground, in-game context strata/layer, and editor key focus as independent prerequisites. The /lp command currently only sets visibility; it does not guarantee a raised window or editor focus.
+- The read-only addon ui.status operation will report observable stacking/focus fields; the Windows host separately supplies exact HWND/foreground and screenshot/occlusion evidence. See [UI focus and z-order gate](UI-FOCUS-AUTOMATION-GATE-2026-11-04.md).
+- Only explicit editor interactions may request z-order promotion or key focus; background queries must not steal either.
 - Re-measure after resize, minimize or reload.
 - Preserve clipboard contents when practical, but only restore if user/another process has not changed it.
 - Record request ID, target, outcome, elapsed time, and evidence; bound diagnostics.
