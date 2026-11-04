@@ -1,0 +1,234 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:luapadmodern:bridge-envelope:1",
+  "title": "LuaPadModern bridge envelope v1",
+  "description": "Transport-independent envelope. RIFT addon is not itself an MCP server.",
+  "type": "object",
+  "required": [
+    "protocol",
+    "version",
+    "kind",
+    "requestId",
+    "sessionId",
+    "operation",
+    "source",
+    "payload"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "protocol": {
+      "const": "luapad-bridge"
+    },
+    "version": {
+      "const": 1
+    },
+    "kind": {
+      "enum": [
+        "request",
+        "result",
+        "event"
+      ]
+    },
+    "requestId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{7,79}$"
+    },
+    "sessionId": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 96
+    },
+    "operation": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(\\.[a-z][a-z0-9]*)*$",
+      "maxLength": 64
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "component"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "component": {
+          "enum": [
+            "addon",
+            "host",
+            "workbridge"
+          ]
+        },
+        "addonVersion": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "clientTag": {
+          "type": "string",
+          "maxLength": 128
+        }
+      }
+    },
+    "payload": {
+      "type": "object"
+    },
+    "status": {
+      "enum": [
+        "ok",
+        "error",
+        "partial"
+      ]
+    },
+    "error": {
+      "type": "object",
+      "required": [
+        "code",
+        "message"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "details": {
+          "type": "object"
+        }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "required": [
+        "truncated"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "truncated": {
+          "type": "boolean"
+        },
+        "transport": {
+          "enum": [
+            "clipboard",
+            "win32-input",
+            "uia",
+            "ipc",
+            "rr2"
+          ]
+        },
+        "receivedAtUtc": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([.][0-9]+)?Z$"
+        },
+        "evidenceSha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "sourceAgeMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "chunkIndex": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "chunkTotal": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "request"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "status"
+              ]
+            },
+            {
+              "required": [
+                "error"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "enum": [
+              "result",
+              "event"
+            ]
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "required": [
+          "status",
+          "meta"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "error"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "error"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "ok",
+              "partial"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "not": {
+          "required": [
+            "error"
+          ]
+        }
+      }
+    }
+  ]
+}

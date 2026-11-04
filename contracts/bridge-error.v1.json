@@ -1,0 +1,22 @@
+{
+  "protocol": "luapad-bridge",
+  "version": 1,
+  "kind": "result",
+  "requestId": "lp-20261104-0002",
+  "sessionId": "winhost-20261104-a",
+  "operation": "lua.execute",
+  "source": {
+    "component": "addon",
+    "addonVersion": "2.0.0-preview17"
+  },
+  "payload": {},
+  "status": "error",
+  "error": {
+    "code": "LUA_RUNTIME_ERROR",
+    "message": "Sample runtime error"
+  },
+  "meta": {
+    "truncated": false,
+    "transport": "clipboard"
+  }
+}

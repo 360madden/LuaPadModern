@@ -1,0 +1,15 @@
+{
+  "protocol": "luapad-bridge",
+  "version": 1,
+  "kind": "request",
+  "requestId": "lp-20261104-0001",
+  "sessionId": "winhost-20261104-a",
+  "operation": "api.inspect",
+  "source": {
+    "component": "host"
+  },
+  "payload": {
+    "expression": "Inspect.Unit.Detail",
+    "depth": 1
+  }
+}

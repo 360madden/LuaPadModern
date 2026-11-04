@@ -1,5 +1,13 @@
 # LuaPad 2.0 preview 17 (physical-PC RIFT)
 
+## AI / Workbridge automation architecture (M1)
+
+- [Architecture](docs/AUTOMATION-ARCHITECTURE.md) — RIFT addon, planned .NET 10 Windows Host, Workbridge MCP, and telemetry boundaries.
+- [Roadmap](docs/AUTOMATION-ROADMAP.md) — gated milestones M0–M7 and physical acceptance requirements.
+- [Bridge v1 JSON Schema](contracts/bridge-envelope-v1.schema.json), sample request/result/error envelopes, and `node contracts/verify-contract.cjs` smoke checks.
+
+The M1 contract is an initial interoperable interface specification, **not yet a live game-to-MCP bridge**. Preview17 remains the verified physical-client baseline.
+
 Source: copied from installed LuaPad 1.8 on 2026-11-03. Preview 1 was installed to physical RIFT AddOns at approximately 14:58 ET on 2026-11-03, after the game exited normally. Original addon and three account SavedVariables files were backed up. See DEPLOYMENT-2026-11-03.md. Preview 2 and Preview 3 are incremental two-file updates hot-copied into the active addon while RIFT remains open; `/reloadui` is needed to load updated Lua code.
 
 ## Changes
