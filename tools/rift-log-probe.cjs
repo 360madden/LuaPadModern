@@ -21,12 +21,41 @@ function validateNonce(value) {
 }
 function newNonce() { return "LPB" + crypto.randomBytes(10).toString("hex"); }
 
-function defaultLogPath() {
-  const home = process.env.USERPROFILE || os.homedir();
-  const roots = [process.env.OneDrive, path.join(home, "OneDrive"), home].filter(Boolean);
-  const candidates = roots.map(root => path.join(root, "Documents", "RIFT", "Log.txt"));
-  for (const candidate of candidates) if (fs.existsSync(candidate)) return candidate;
-  return candidates[0] || path.join(home, "Documents", "RIFT", "Log.txt");
+function defaultLogPaths(env=process.env,home=env.USERPROFILE||os.homedir()) {
+  // Exact, bounded candidate paths; no user-directory scan or shell invocation.
+  // Opt-in replacement candidates support custom folders and hermetic tests.
+  const raw=env.LUAPAD_LOG_CANDIDATES;
+  if(typeof raw==="string" && raw.length>0) {
+    if(raw.length>8192) throw new Error("LUAPAD_LOG_CANDIDATES too long");
+    const names=raw.split(path.delimiter).map(s=>s.trim());
+    if(names.length<1 || names.length>8 || names.some(s=>
+      !s || s.length>2048 || !path.isAbsolute(s) ||
+      path.basename(s).toLowerCase()!=="log.txt"))
+      throw new Error("LUAPAD_LOG_CANDIDATES requires 1-8 absolute Log.txt paths");
+    const seen=new Set();
+    return names.filter(name=>{
+      const key=path.normalize(name).toLowerCase();
+      if(seen.has(key))return false;
+      seen.add(key);
+      return true;
+    });
+  }
+  const roots=[env.OneDrive,env.OneDriveConsumer,env.OneDriveCommercial,
+    path.join(home,"OneDrive"),home];
+  const paths=[];
+  const seen=new Set();
+  for(const root of roots) {
+    if(typeof root!=="string" || !root.trim() || !path.isAbsolute(root))continue;
+    const candidate=path.join(root,"Documents","RIFT","Log.txt");
+    const key=path.normalize(candidate).toLowerCase();
+    if(!seen.has(key)){seen.add(key);paths.push(candidate);}
+  }
+  return paths;
+}
+function defaultLogPath(env=process.env,home=env.USERPROFILE||os.homedir()) {
+  const candidates=defaultLogPaths(env,home);
+  return candidates.find(candidate=>fs.existsSync(candidate)) ||
+    candidates.find(candidate=>fs.existsSync(path.dirname(candidate))) || candidates[0];
 }
 
 function luaProbe(nonce) {
@@ -238,16 +267,19 @@ function runCli() {
   if(opts.help) {
     console.log("node tools/rift-log-probe.cjs [--path C:\\...\\Log.txt] [--nonce LPB12345678] [--timeout-ms 120000] [--poll-ms 100] [--print-lua] [--from-start]");
     console.log("Read-only. Watches newly appended RIFT log data, never sends game input.");
+    console.log("LUAPAD_LOG_CANDIDATES=ABS;ABS replaces defaults (1-8 absolute Log.txt paths). --path overrides.");
     return;
   }
   try {
     const nonce=validateNonce(opts.nonce||newNonce());
-    const filePath=opts.path||defaultLogPath();
+    const autoCandidates=opts.path ? [] : defaultLogPaths();
+    let filePath=opts.path||defaultLogPath();
+    let lookForAlternate=autoCandidates.length>0 && !fs.existsSync(filePath);
     const timeoutMs=safeInt(opts["timeout-ms"],DEFAULT_TIMEOUT_MS,1000,600000,"timeout-ms");
     const pollMs=safeInt(opts["poll-ms"],DEFAULT_POLL_MS,25,1000,"poll-ms");
     const snippet=luaProbe(nonce);
     if(opts["print-lua"]) {console.log(snippet);return;}
-    const watcher=new LogTailProbe({filePath,nonce,fromStart:opts["from-start"]});
+    let watcher=new LogTailProbe({filePath,nonce,fromStart:opts["from-start"]});
     const started=Date.now();
     const send=x=>console.log(JSON.stringify(x));
     // Establish the EOF/missing-file baseline before advertising readiness.
@@ -267,6 +299,22 @@ function runCli() {
     };
     const tick=setInterval(()=>{
       if(Date.now()-started>=timeoutMs){finish("timeout",2);return;}
+      // If logging was initially off, select whichever known location first
+      // appears. Read its first bytes: the marker may predate this poll.
+      if(lookForAlternate && !fs.existsSync(filePath)) {
+        const discovered=autoCandidates.find(candidate=>fs.existsSync(candidate));
+        if(discovered) {
+          const changed=discovered!==filePath;
+          watcher.close();
+          filePath=discovered;
+          // The first marker may be written with the newly created file.
+          watcher=new LogTailProbe({filePath,nonce,fromStart:true});
+          if(changed) {
+            send({event:"log_path_selected",path:filePath,reason:"new_file"});
+          }
+          lookForAlternate=false;
+        }
+      }
       if(!watcher.opened && !fs.existsSync(filePath) && !warnedMissing) {
         warnedMissing=true;send({event:"waiting_for_file",path:filePath});
       }
@@ -279,4 +327,4 @@ function runCli() {
   }catch(e){console.error("Probe setup failed: "+e.message);process.exitCode=1;}
 }
 if(require.main===module)runCli();
-module.exports={LogTailProbe,validateNonce,luaProbe,parseArgs,defaultLogPath};
+module.exports={LogTailProbe,validateNonce,luaProbe,parseArgs,defaultLogPath,defaultLogPaths};

@@ -2,6 +2,8 @@
 
 Planning baseline: 2026-11-04. Milestone status requires evidence, not merely new source files.
 
+Three source-only lanes now run concurrently for log-path discovery, the no-reload pilot, and Preview 20 UI verification; see the [live priority queue](PRIORITY-QUEUE-2026-11-04.md). The physical RIFT gates remain separately held.
+
 ## Priorities
 
 **P1 NOW:** LuaPad must auto-open centered and remain above overlapping addons without `/lp`. Preview 18 auto-open physically PASSED but stacking FAILED in user screenshot. **Joey reported Preview 19 stacking fixed in running RIFT** (no new screenshot); Preview 20 adds centered `UIParent` anchoring and Joey Delfierro title/TOC attribution. **463/463 source/mock bridge checks and guarded Preview 20 AddOns hot-copy passed; live Preview 20 position/title await Joey's authorized `/reloadui` or normal launch.** Do not take game focus or reload without separate permission. See [Preview 20 checkpoint](PREVIEW20-CENTER-AUTHOR-AND-BRIDGE-RESEARCH-2026-11-04.md).
