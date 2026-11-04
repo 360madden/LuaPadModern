@@ -14,7 +14,7 @@ P2: performance-tuned live streaming, advanced editor and debugging integrations
 | --- | --- | --- | --- |
 | M0 Baseline | Preserve Preview17 and backups | Verified physical Enter/Tab; Git clean; rollback | Mostly complete; some editor edge cases |
 | M1 Contract | Versioned schema, request IDs, statuses/errors, fixtures, tests, architecture | Contract checks and old tests green; Git commit | Complete (contract-only; not live) |
-| M2 Addon bridge | Pure Lua serializer, command router, API discovery, compile-only probes | Physical RIFT produces matching structured result | Not started |
+| M2 Addon bridge | Pure Lua serializer, command router, API discovery, compile-only probes | Physical RIFT produces matching structured result | In progress: isolated codec 36/36; no live bridge |
 | M3 Windows host | C# .NET10 background host, WPF shell, target validation, clipboard route | Host request/result verified with RIFT; no coordinate drift | Not started |
 | M4 Workbridge MCP | Typed LuaPad tools, output schemas, receipts, bounded timeouts | MCP tool -> RIFT -> structured result proven | Not started |
 | M5 Telemetry | Snapshots, event buffers, opt-in RR2 read-only source with provenance | Freshness and performance measured | Not started |
@@ -45,9 +45,10 @@ P2: performance-tuned live streaming, advanced editor and debugging integrations
 
 ## M2 first coding slice
 
-- [ ] Isolated Lua bridge serializer and router, without altering editor behavior.
-- [ ] Unit tests for UTF-8, escaping, errors, size caps, ID echo.
-- [ ] Read-only health/status command and confirmed dispatch callback signature.
+- [x] Isolated Lua 5.1 JSON codec and correlated result envelopes (`Bridge/codec.lua`), not loaded in RIFT.
+- [x] 36 headless assertions for UTF-8, escaping, errors, bounds and request ID echo; see [M2 codec checkpoint](M2-CODEC-CHECKPOINT-2026-11-04.md).
+- [ ] Isolated command router, read-only health/status handler and replay/error semantics.
+- [ ] Confirm RIFT slash dispatch callback signature in the physical game.
 - [ ] Only then backup/hotcopy, and physically test after separately authorized reload.
 
 ## Parallel development lanes after contract freeze

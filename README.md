@@ -8,6 +8,8 @@
 
 The M1 contract is an initial interoperable interface specification, **not yet a live game-to-MCP bridge**. Preview17 remains the verified physical-client baseline.
 
+**M2 isolated codec (development-only):** [Bridge/codec.lua](Bridge/codec.lua) and [36-case headless test](bridge-codec-tests.lua) implement bounded Lua 5.1 JSON/result encoding. See the [checkpoint](docs/M2-CODEC-CHECKPOINT-2026-11-04.md). The module is **not** loaded into the RIFT addon yet.
+
 Source: copied from installed LuaPad 1.8 on 2026-11-03. Preview 1 was installed to physical RIFT AddOns at approximately 14:58 ET on 2026-11-03, after the game exited normally. Original addon and three account SavedVariables files were backed up. See DEPLOYMENT-2026-11-03.md. Preview 2 and Preview 3 are incremental two-file updates hot-copied into the active addon while RIFT remains open; `/reloadui` is needed to load updated Lua code.
 
 ## Changes
