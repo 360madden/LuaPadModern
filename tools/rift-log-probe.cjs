@@ -235,6 +235,9 @@ function runCli() {
     const watcher=new LogTailProbe({filePath,nonce,fromStart:opts["from-start"]});
     const started=Date.now();
     const send=x=>console.log(JSON.stringify(x));
+    // Establish the EOF/missing-file baseline before advertising readiness.
+    // A sender reacting immediately to "started" must not lose its marker.
+    const baselineEvents=watcher.poll();
     send({event:"started",at:new Date(started).toISOString(),
       path:filePath,nonce,pollMs,timeoutMs,logExists:fs.existsSync(filePath),
       message:"Paste the same nonce Lua probe into the already-running LuaPad editor and click Run. Activate /log manually first."});
@@ -256,7 +259,7 @@ function runCli() {
       if(watcher.match)finish("matched",0);
     },pollMs);
     process.on("SIGINT",()=>finish("interrupted",130));
-    for(const e of watcher.poll())send(e);
+    for(const e of baselineEvents)send(e);
     if(watcher.match)finish("matched",0);
   }catch(e){console.error("Probe setup failed: "+e.message);process.exitCode=1;}
 }

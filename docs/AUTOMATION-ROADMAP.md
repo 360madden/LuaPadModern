@@ -65,6 +65,7 @@ After P1 physical acceptance, resume the prior plan: P0 deterministic AI request
 - [x] Implement read-only exact PID/HWND/start-time and fresh-geometry/focus/occlusion readiness gates.
 - [x] Implement managed read-only `Log.txt` tailer with nonce matching, split UTF-8/UTF-16LE, truncation and replacement detection (31 synthetic cases); [checkpoint](M3-NONCOMBAT-LOG-TAIL-CHECKPOINT-2026-11-04.md).
 - [x] Strict `node verify-host.cjs`: 113/113 host-core tests; [checkpoint](M3-HOST-CORE-CHECKPOINT-2026-11-04.md).
+- [x] Add opt-in .NET 10 host log-probe CLI, 15/15 synthetic child-process checks, and baseline-before-ready handshake in both managed and Node watchers (no game interaction).
 - [ ] After physical `/log` acceptance, host a bounded opt-in poll service with receipts; no background service is running now.
 - [ ] Implement actual Windows process/HWND observer, foreground-aware input dispatch, clipboard sampler/receipts, recovery.
 - [ ] WPF desktop/tray shell with stable UI Automation IDs, then physically validate with RIFT.

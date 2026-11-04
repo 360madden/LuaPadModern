@@ -21,6 +21,20 @@ Status: **managed source component complete; 31 new synthetic log-reader asserti
 - `node verify-preview.cjs`: structural PASS.
 - No RIFT input, UI reload, addon installation or host service changes were made for this M3 slice.
 
+## Opt-in managed CLI available offline
+
+- [HostProbe](../HostProbe/Program.cs) is a .NET 10 command-line entry point using the same tested `NoncombatLogTailer`, without Node in the actual listening process. It never starts automatically, changes focus, accesses a game process, writes `Log.txt`, or creates a Windows service.
+- `node tools/verify-host-probe-cli.cjs`: **15/15 synthetic checks PASS** (build, help, printable inert Lua snippet, option rejection, absent-log timeout, and real separate-process creation/split append/matched receipt). Repeated passing runs; no physical RIFT interaction.
+- Both the Node and managed watchers now **establish the initial EOF/missing-file baseline before emitting their `started` notice**. Synthetic tests emit immediately upon seeing that notice; this fixes a real startup race that could otherwise skip a newly arriving marker as pre-existing history.
+- Run manually from a Windows terminal in `C:\work\LuaPadModern` only when explicitly needed:
+
+  ```powershell
+  dotnet run --project HostProbe/LuaPadModern.HostProbe.csproj --configuration Release -- --nonce LPB_FRESH_TEST_20261104 --timeout-ms 120000 --poll-ms 100
+  ```
+
+  To generate a matching in-game LuaPad snippet **without starting a listener**, add `--print-lua`. For nonstandard RIFT directories, supply `--path "C:\exact\RIFT\Log.txt"`.
+- Exit status: 0 matched; 2 timeout (inconclusive when game logging is not enabled); 1 invalid options; 130 user cancellation. Output is concise JSON status/receipt lines; it does not reproduce unrelated chat.
+
 ## Physical pilot remains blocked / unknown
 
 - Live Node watcher `LPB_LIVE_20261104_MANUAL1` (10:12–10:16 ET) timed out with no `Log.txt` at the default OneDrive/Documents/RIFT path and 0 appended bytes. Joey left for an appointment before running `/log` or the LuaPad marker; this is **inconclusive**, not a failed RIFT API/flush test.

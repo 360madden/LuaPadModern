@@ -23,19 +23,18 @@ async function main() {
   let didStart=false;
   const received=[];
   const maybeStart=()=>{
-    if(didStart || !stdout.includes('"event":"waiting_for_file"'))return;
+    // Respond immediately to readiness; a late EOF baseline would lose this line.
+    if(didStart || !stdout.includes('"event":"started"'))return;
     didStart=true;
+    if(stop)return;
+    fs.writeFileSync(filePath,"RIFT prefix "+marker.slice(0,marker.length-2),"utf8");
+    createAtMs=Date.now();
+    appends++;
     setTimeout(()=>{
       if(stop)return;
-      fs.writeFileSync(filePath,"RIFT prefix "+marker.slice(0,marker.length-2),"utf8");
-      createAtMs=Date.now();
+      fs.appendFileSync(filePath,marker.slice(marker.length-2),"utf8");
       appends++;
-      setTimeout(()=>{
-        if(stop)return;
-        fs.appendFileSync(filePath,marker.slice(marker.length-2),"utf8");
-        appends++;
-      },55);
-    },80);
+    },55);
   };
   child.stdout.on("data",data=>{
     stdout+=data.toString("utf8");
