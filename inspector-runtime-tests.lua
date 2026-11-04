@@ -17,7 +17,7 @@ local function check(name, condition, detail)
   originalPrint("PASS " .. name)
 end
 local function frame(kind, name, parent)
-  local obj = { _kind = kind, _name = name, _text = "", _visible = true, _events = {}, _parent = parent }
+  local obj = { _kind = kind, _name = name, _text = "", _visible = true, _events = {}, _parent = parent, Event = {} }
   frames[name] = obj
   function obj:GetName() return self._name end
   function obj:GetParent() return self._parent end
@@ -96,7 +96,7 @@ Library = { LibSimpleWidgets = {
   SetBorder = function(view, ...) view._border = { ... } end,
 }}
 Inspect = { Addon = { Detail = function(name)
-  return { toc = { Version = name == "Inspector" and "1.9.0-preview5" or name == "LuaPad" and "2.0.0-preview16" or "?" } }
+  return { toc = { Version = name == "Inspector" and "1.9.0-preview5" or name == "LuaPad" and "2.0.0-preview17" or "?" } }
 end }}
 local registered = {}
 Command = {
@@ -359,32 +359,39 @@ check("LuaPad empty-code guidance", lpOutput._text:find("Please enter some Lua c
 -- Snippet cards should keep a consistent selected state through Save, Load and Clear.
 local slot1 = frames.LuaPadSnippetButton1
 local editor = frames.LuaPadInputField
+check("RIFT native textfield KeyDown registered", type(editor.Event.KeyDown) == "function")
+check("Generic keydown not registered on textfield", editor._events[Event.UI.Input.Key.Down] == nil)
 editor:SetText("ab")
 editor:SetCursor(1)
-editor._events[Event.UI.Input.Key.Down](editor, Event.UI.Input.Key.Down, "tab")
-check("RIFT three-argument Tab event inserts spaces", editor._text == "a  b" and editor:GetCursor() == 3)
+editor.Event:KeyDown("\t")
+check("RIFT native ASCII Tab inserts spaces", editor._text == "a  b" and editor:GetCursor() == 3)
+check("Tab restores editor key focus", editor._keyfocus == true)
 editor:SetText("ab")
 editor:SetCursor(1)
-editor._events[Event.UI.Input.Key.Down](editor, Event.UI.Input.Key.Down, "return")
-check("RIFT three-argument Return event inserts newline", editor._text == "a\nb" and editor:GetCursor() == 2)
+editor.Event:KeyDown("\r")
+check("RIFT native ASCII Return inserts newline", editor._text == "a\nb" and editor:GetCursor() == 2)
 editor:SetText("ab")
 editor:SetCursor(1)
-editor._events[Event.UI.Input.Key.Down](editor, "tab")
-check("two-argument key event stays compatible", editor._text == "a  b" and editor:GetCursor() == 3)
+editor.Event:KeyDown("tab")
+check("named Tab remains compatible", editor._text == "a  b" and editor:GetCursor() == 3)
 editor:SetText("ab")
 editor:SetCursor(1)
-editor._events[Event.UI.Input.Key.Down](editor, Event.UI.Input.Key.Down, "q")
-check("normal key event leaves native typing intact", editor._text == "ab" and editor:GetCursor() == 1)
+editor.Event:KeyDown("return")
+check("named Return remains compatible", editor._text == "a\nb" and editor:GetCursor() == 2)
+editor:SetText("ab")
+editor:SetCursor(1)
+editor.Event:KeyDown("q")
+check("normal textfield key leaves native typing intact", editor._text == "ab" and editor:GetCursor() == 1)
 editor:SetText("abcd")
 editor:SetCursor(3)
 editor:SetSelection(1, 3)
-editor._events[Event.UI.Input.Key.Down](editor, Event.UI.Input.Key.Down, "tab")
+editor.Event:KeyDown("\t")
 check("Tab replaces highlighted text", editor._text == "a  d" and editor:GetCursor() == 3)
 check("Tab clears highlighted selection", editor:GetSelection() == nil)
 editor:SetText("abcd")
 editor:SetCursor(3)
 editor:SetSelection(1, 3)
-editor._events[Event.UI.Input.Key.Down](editor, Event.UI.Input.Key.Down, "return")
+editor.Event:KeyDown("\r")
 check("Enter replaces highlighted text", editor._text == "a\nd" and editor:GetCursor() == 2)
 check("Enter clears highlighted selection", editor:GetSelection() == nil)
 slot1:Fire("left-click")

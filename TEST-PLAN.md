@@ -1,18 +1,18 @@
-# LuaPad 2.0 Preview 16 — in-game acceptance checklist
+# LuaPad 2.0 Preview 17 — physical-RIFT acceptance checklist
 
 **Target:** physical RIFT Live x64. No VMware. Do not use in combat or during an important session.
 
 ## Before test
-- [x] Preview 16 guarded two-file hot-copy over Preview 15 verified on the physical PC. Do **not** rerun `install-preview.ps1` during gameplay.
+- [x] Preview 17 native-handler `main.lua` and TOC hot-copied with old/new hash preflight and a rollback backup. **Do not rerun** `install-preview.ps1` during gameplay.
 - [ ] Confirm the original LuaPad 1.8 and three account SavedVariables copies remain backed up.
-- [x] Run `verify-preview.cjs` from `C:\work\LuaPadModern` (56/56 checks passed) and parse Lua source (9/9 files passed).
-- [x] Back up installed Preview 15 `main.lua` and root TOC; hot-copy only those two files with hash verification. Game exit is **not** required for this incremental update.
-- [x] Joey performed `/reloadui` and reported testing the Preview 16 Code Editor on 2026-11-04; Enter and Tab were not working properly. Exact on-screen effect and addon errors have not yet been captured.
+- [x] Preview 17 source verification: 56/56 structural checks; 128/128 Fengari runtime assertions; main.lua syntax and execution included in the runtime harness. Earlier 9/9 standalone Lua parses were for Preview 16.
+- [x] Only two installed addon files changed. RIFT remains running with Preview 16 loaded until an authorized `/reloadui`.
+- [x] On 2026-11-04, Joey performed `/reloadui` for Preview 16. Assistant subsequently focused the exact physical RIFT process, opened `/lp`, injected editor keyboard/mouse input, and reproduced both bugs with screenshots.
 
 ## Runtime gates
 | ID | Action | Expected |
 | --- | --- | --- |
-| LP-01 | `/lp` in chat | Window title says `LuaPad v2.0.0-preview16`; buttons visible |
+| LP-01 | `/lp` in chat | Window title says `LuaPad v2.0.0-preview17`; buttons visible |
 | LP-02 | Hover/press Run, Save, Load, Inspect | Visual hover and depression with readable labels |
 | LP-03 | Type and run `print("LuaPad OK")` | Output contains exactly the message |
 | LP-04 | Type and run `this is not lua !` | Syntax error displayed, no addon crash |
@@ -25,7 +25,7 @@
 | LP-11 | Drag window by its border | Window moves; editor remains clickable |
 | LP-12 | Close and reopen via `/lp` | No duplicate controls or error |
 | LP-13 | Log out/re-enter normally | Saved snippet persists |
-| LP-14 | After `/reloadui`, review chat | `[LuaPad v2.0.0-preview16] READY` startup message appears, with no addon errors |
+| LP-14 | After `/reloadui`, review chat | `[LuaPad v2.0.0-preview17] READY` startup message appears, with no addon errors |
 | LP-15 | Run `this is not lua !`, then click Copy Output | Clipboard paste contains full syntax error text |
 | LP-16 | Run `error("test")`, then click Copy Output | Clipboard paste contains runtime error and traceback (when API allows) |
 | LP-17 | Select Help, then reopen `/lp` | Help and title both show current version from TOC |
@@ -34,11 +34,17 @@
 | LP-20 | Inspect Code Snippets heading | Clear separation from Help/Copy Output, no overlapping text |
 | LP-21 | Inspect section headings | Code Editor, Output, Code Snippets share consistent size and pale-cyan color |
 
-## Live key-input failure — 2026-11-04 (release blocker)
-- **RED / physical RIFT:** After manually using `/reloadui`, Joey reports that neither Enter nor Tab works properly in the LuaPad Code Editor. This overrides the green mock tests; LP-41–LP-46 remain unaccepted.
-- **Evidence gap:** Need to distinguish no insertion, wrong insertion, lost focus, duplicate insertion, or a Lua exception. Do not mark any of those as the confirmed symptom without direct observation.
-- **Leading code-level hypothesis:** Original LuaPad used `inputField.Event:KeyDown(button)` with ASCII 13/9 and `SetKeyFocus(true)`. Preview 15–16 switched to `inputField:EventAttach(Event.UI.Input.Key.Down, ...)`, a different registration path. The mock harness simulated the latter callback directly and never proved native dispatch.
-- **Direct-test prerequisite:** A read-only physical Windows check on 2026-11-04 verified PID 18056 as the exact RIFT client and found its window minimized / not foreground. Before real keyboard or mouse automation, obtain Joey's permission to restore and focus that window and use a scoped input controller; do not interact with gameplay or reload without confirmation.
+## Live key-input failure — 2026-11-04 (Preview 16 confirmed; Preview 17 pending)
+- **RED / physical RIFT Preview 16:** Editor accepted a typed `a`; Enter then `b` displayed `ab` on one line; Tab then `c` displayed `abc` without spaces. Both key injections completed against PID 18056 / HWND 0x640A18 while the game remained running.
+- **Screenshots:** Enter failure screenshot SHA256 `10f9dd1e0476912e2b57793dd0d49584c2359ffe71d7adc97cde96994f8367d5`; Tab failure screenshot SHA256 `91708e300b595e2d94801585c67262d9225525fa5850a82730df89090693c237`, captured through the pinned RIFT visual gate.
+- **Leading cause:** Preview 15–16 used generic `Event.UI.Input.Key.Down` attachment on a RiftTextfield. The original LuaPad used `inputField.Event:KeyDown(button)` with ASCII 13 and 9. Preview 17 restores that native registration, preserving selection replacement and focus restoration. Actual Preview 17 behavior remains unverified until loaded.
+- **Reload boundary:** The user authorized editor mouse/keyboard tests but excluded automated `/reloadui`; do not reload the active client without new permission.
+
+## Preview 17 physical keyboard acceptance (after authorized /reloadui)
+- [ ] LP-47: Confirm title `LuaPad v2.0.0-preview17`, editor still editable, no addon startup error.
+- [ ] LP-48: Type `a`, press Enter, type `b` using guarded physical key injection; screenshot must show `a` and `b` on distinct lines.
+- [ ] LP-49: Press Tab, type `c` in the editor; screenshot must show two spaces before `c` and normal typing afterward.
+- [ ] LP-50: Move cursor between characters, repeat Enter/Tab, verify no duplication, no focus loss and correct cursor position.
 
 ## Preview 16 selection replacement acceptance (after /reloadui)
 - [ ] LP-44: Highlight two characters in the editor, press Tab, and confirm the selection is replaced by exactly two spaces (not inserted after the highlighted text).
@@ -99,7 +105,7 @@
 - [ ] IP-15: Dragging the scrollbar changes position; releasing the mouse stops dragging. Returning to short output resets scroll offset to 0.
 - [ ] IP-16: LuaPad main editor/output scroll areas continue to work after shared LibSimpleWidgets scrollbar patch.
 - [ ] IP-00: Preview 5 fixes the reproduced Inspector button exception at `Inspector/main.lua:214` by reading numeric depth from the slider. Click Inspect several times; check NO more `tonumber` boolean-base errors appear in RIFT chat. Test errors now render in the copyable result pane.
-- [ ] IP-01: /ti opens centered Inspector with title `Inspector v1.9.0-preview5`; /lp title displays `LuaPad v2.0.0-preview16`.
+- [ ] IP-01: /ti opens centered Inspector with title `Inspector v1.9.0-preview5`; /lp title displays `LuaPad v2.0.0-preview17`.
 - [ ] IP-02: Output pane, input label, depth control, Inspect/Help/Close and Copy Output do not overlap or fall outside 800x600 window.
 - [ ] IP-03: Help fits entirely within 650x430 window; close/reopen works.
 - [ ] IP-04: Depth moves 1,2,3,4,5 from left to right; result expansion corresponds to setting.

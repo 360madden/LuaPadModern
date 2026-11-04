@@ -28,7 +28,7 @@ const inspector = read("Inspector/main.lua");
 const widgets = read("LibSimpleWidgets/uicreateframe.lua");
 const scroll = read("LibSimpleWidgets/scrollview.lua");
 const window = read("LibSimpleWidgets/window.lua");
-check("LuaPad preview version", /Version\s*=\s*"2\.0\.0-preview16"/.test(read("RiftAddon.toc")));
+check("LuaPad preview version", /Version\s*=\s*"2\.0\.0-preview17"/.test(read("RiftAddon.toc")));
 check("Direct widget construction", main.includes("Library.LibSimpleWidgets.Window") && main.includes("Library.LibSimpleWidgets.ScrollView") && inspector.includes("Library.LibSimpleWidgets.Window"));
 check("No global UI.CreateFrame override", !/UI\.CreateFrame\s*=/.test(widgets));
 check("No legacy RiftButton constructors", ![main, inspector].some(x => /UI\.CreateFrame\("RiftButton"/.test(x)));
@@ -40,7 +40,7 @@ check("Scroll view handles empty and exact-fit content", scroll.includes("math.m
 check("Harness executes real scroll view source", read("inspector-runtime-tests.lua").includes('loadfile("LibSimpleWidgets/scrollview.lua")'));
 check("Modern scroll events", scroll.includes("Event.UI.Layout.Size") && scroll.includes("wheel.Forward") && scroll.includes("wheel.Back"));
 check("No full-window drag overlay", !window.includes("SetAllPoints(window)"));
-check("LuaPad key callback uses documented argument order", main.includes("function(_, eventOrKey, extraKey)") && main.includes("local key = extraKey or eventOrKey") && read("inspector-runtime-tests.lua").includes("RIFT three-argument Tab event inserts spaces") && read("inspector-runtime-tests.lua").includes("two-argument key event stays compatible"));
+check("Native RiftTextfield key table used for Enter and Tab", main.includes("function inputField.Event:KeyDown(button)") && !main.includes("inputField:EventAttach(Event.UI.Input.Key.Down") && read("inspector-runtime-tests.lua").includes("RIFT native ASCII Tab inserts spaces") && read("inspector-runtime-tests.lua").includes("RIFT native ASCII Return inserts newline"));
 check("LuaPad selection insertion clears highlight", main.includes("inputField:GetSelection()") && main.includes("inputField:SetSelection()") && read("inspector-runtime-tests.lua").includes("Tab replaces highlighted text") && read("inspector-runtime-tests.lua").includes("Enter clears highlighted selection"));
 check("LuaPad bounded error display with full copy", main.includes("local lastOutput =") && main.includes("local MAX_RENDER_BYTES, MAX_RENDER_NEWLINES = 12100, 300") && main.includes("utf8BytePrefix(lastOutput, MAX_RENDER_BYTES)") && main.includes("local content = lastOutput") && read("inspector-runtime-tests.lua").includes("huge LuaPad error full diagnostic copyable") && read("inspector-runtime-tests.lua").includes("multiline LuaPad print tail survives clipboard"));
 check("LuaPad UTF8-safe output and snippets", main.includes("local function utf8BytePrefix") && main.includes("local function utf8ByteSuffix") && main.includes("utf8BytePrefix(preview, 14)") && main.includes("utf8ByteSuffix(combined, 12000)") && read("inspector-runtime-tests.lua").includes("snippet caption keeps complete UTF8") && read("inspector-runtime-tests.lua").includes("LuaPad 12000-byte tail keeps complete UTF8"));

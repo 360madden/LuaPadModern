@@ -245,19 +245,25 @@ local function init()
 	outputField:SetHeight(150)
 	outputFieldScroll:SetContent(outputField)
 	
-	-- Modern RIFT key event. Textfield.Change also catches pastes and programmatic edits.
-	-- Frame events pass (frame, eventHandle, key); tolerate older two-arg mocks.
-	inputField:EventAttach(Event.UI.Input.Key.Down, function(_, eventOrKey, extraKey)
-		local key = extraKey or eventOrKey
+	-- The physical RiftTextfield consumes Enter/Tab before the generic
+	-- Event.UI.Input.Key.Down callback. Use its native KeyDown event table,
+	-- matching the original LuaPad input registration.
+	function inputField.Event:KeyDown(button)
 		local insert
-		if key == "\r" or key == "return" or key == "enter" then insert = "\n"
-		elseif key == "\t" or key == "tab" then insert = "  " end
+		if type(button) == "string" then
+			local code = button:byte(1)
+			local named = button:lower()
+			if code == 13 or code == 10 or named == "return" or named == "enter" then
+				insert = "\n"
+			elseif code == 9 or named == "tab" then
+				insert = "  "
+			end
+		end
 		if not insert then return end
 		local txt = inputField:GetText() or ""
 		local fromPos = inputField:GetCursor() or #txt
 		local toPos = fromPos
-		-- A selection must be replaced, rather than inserting at its trailing cursor.
-		-- RIFT expresses selection bounds in the same zero-based units as GetCursor.
+		-- Preserve Preview 16 selection-replacement behavior.
 		if type(inputField.GetSelection) == "function" then
 			local beginPos, endPos = inputField:GetSelection()
 			if type(beginPos) == "number" and type(endPos) == "number"
@@ -265,10 +271,11 @@ local function init()
 				fromPos, toPos = beginPos, endPos
 			end
 		end
+		inputField:SetKeyFocus(true)
 		inputField:SetText(txt:sub(1, fromPos) .. insert .. txt:sub(toPos + 1))
 		if type(inputField.SetSelection) == "function" then inputField:SetSelection() end
 		inputField:SetCursor(fromPos + #insert)
-	end, "LuaPad editor keydown")
+	end
 	inputField:EventAttach(Event.UI.Textfield.Change, function()
 		local _, newlineCount = (inputField:GetText() or ""):gsub("\n", "\n")
 		inputField:SetHeight(math.max(16 * (newlineCount + 1), 292))
