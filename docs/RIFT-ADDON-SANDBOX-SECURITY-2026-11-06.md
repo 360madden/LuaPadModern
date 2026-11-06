@@ -55,6 +55,12 @@ This is **RIFT MMORPG (Trion/Gamigo) addon Lua**, not a different product named 
 - Current source gates: structural 59/59 and bridge/runtime 483/483 PASS across six suites on 2026-11-06, including 20 read-only security probe assertions. Prior physical Preview 17 Enter/Tab passed; current Preview 20 live centered/reopen passed on 2026-11-06, editor focus still unverified.
 - Physical RIFT had temporarily appeared as 1024×671 with UIA x=-32768; the existing focus-only tool restored 1936×1048 at x=-1928 without keyboard/mouse input. A coordinate click requires a **new** geometry/capture gate, never a cached screenshot coordinate.
 
+## Live screenshot receipt — 2026-11-06T07:22:55Z
+
+- Physical RIFT `rift_x64` PID 32156 / HWND 462734, class `TWNClientFramework`; verified window capture SHA-256 `09982717b1c87e7fd26ec0904ac7cedb9e67904edc7834875e0c751b53fa5b2d`, 1920×1032. No keyboard or mouse input injected.
+- LuaPad v2.0.0-preview20 is visible, centered horizontally and above other panels. The **separate RiftReader API Readiness panel** visibly displays `secure mode: false`; this is a screenshot of that panel's reported state, **not** a direct read of `Inspect.System.Secure()` by the new LuaPad probe.
+- That panel also reports `root-frame-focus: unknown`, `native text entry: unknown`, `autonomous input ready: false`. Consequently editor input remains gated. No claim that the read-only sandbox probe ran in physical RIFT.
+
 ## Read-only Live capability inventory
 
 Run `tools/rift-sandbox-readonly-probe.lua` manually from LuaPad's editor **only when editor focus is independently confirmed** and no other input modal is present. It invokes `Inspect.System.Secure`, `Inspect.System.Version`, `Inspect.Addon.Current` and one `Inspect.Documentation` lookup behind `pcall`; everything else is inspected by type only. It never calls `os.execute`, `io.open`, `package.loadlib`, `Command.*`, game input or storage.
