@@ -14,7 +14,7 @@ Description = {
 
 Author = "Joey Delfierro (360madden); original LuaPad by NerfedWar"
 Website = "https://github.com/360madden"
-Version = "2.0.0-preview20"
+Version = "2.0.0-preview21"
 
 -- Retained for upstream provenance; maintainer contact has not been published.
 Email = "nerfed.war@gmail.com"

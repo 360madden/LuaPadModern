@@ -116,6 +116,7 @@ local copyOutputButton = modernButton("LuaPadCopyOutputButton", luaPadWindow)
 local label1 = UI.CreateFrame("Text", "LuaPadLabel1", luaPadWindow)
 local label2 = UI.CreateFrame("Text", "LuaPadLabel2", luaPadWindow)
 local label3 = UI.CreateFrame("Text", "LuaPadLabel3", luaPadWindow)
+local editorFocusStatus = UI.CreateFrame("Text", "LuaPadEditorFocusStatus", luaPadWindow)
 	
 local snippetButtons = {}
 local snippetRepaints = {}
@@ -202,6 +203,44 @@ local function setOutput(message, resetScroll)
 	outputFieldScroll:ContentResized()
 end
 
+-- Read-only addon-side key focus, independent of Windows foreground or occlusion.
+-- Never infer focus from a click alone: always query RiftTextfield afterward.
+function LuaPad.GetEditorFocusStatus()
+  if not inputField or not luaPadWindow:GetVisible()
+    or type(inputField.GetKeyFocus) ~= "function" then return nil end
+  local ok, focused = pcall(inputField.GetKeyFocus, inputField)
+  if ok and type(focused) == "boolean" then return focused end
+  return nil
+end
+
+local function refreshEditorFocusStatus(forceUnavailable)
+  local focused = LuaPad.GetEditorFocusStatus()
+  if not luaPadWindow:GetVisible() then
+    editorFocusStatus:SetText("Editor: Hidden")
+    editorFocusStatus:SetFontColor(0.64, 0.68, 0.74, 1)
+  elseif forceUnavailable or focused == nil then
+    editorFocusStatus:SetText("Editor: Unavailable")
+    editorFocusStatus:SetFontColor(1, 0.65, 0.39, 1)
+  elseif focused then
+    editorFocusStatus:SetText("Editor: Focused")
+    editorFocusStatus:SetFontColor(0.39, 0.95, 0.70, 1)
+  else
+    editorFocusStatus:SetText("Editor: Click to focus")
+    editorFocusStatus:SetFontColor(0.57, 0.78, 0.98, 1)
+  end
+end
+
+local function requestEditorFocus()
+  if not inputField or not luaPadWindow:GetVisible()
+    or type(inputField.SetKeyFocus) ~= "function" then
+    refreshEditorFocusStatus(true)
+    return false
+  end
+  local ok = pcall(inputField.SetKeyFocus, inputField, true)
+  refreshEditorFocusStatus(not ok)
+  return ok and LuaPad.GetEditorFocusStatus() == true
+end
+
 -- Addon initialisation
 local function init()
 
@@ -278,11 +317,30 @@ local function init()
 			end
 		end
 		inputField:SetKeyFocus(true)
+    refreshEditorFocusStatus()
 		inputField:SetText(txt:sub(1, fromPos) .. insert .. txt:sub(toPos + 1))
 		if type(inputField.SetSelection) == "function" then inputField:SetSelection() end
 		inputField:SetCursor(fromPos + #insert)
 	end
-	inputField:EventAttach(Event.UI.Textfield.Change, function()
+	-- Explicit user clicks acquire focus; startup and /lp intentionally do not.
+  -- Guard each optional event because older RIFT clients may omit focus events.
+  local mouseClick = Event.UI.Input.Mouse.Left.Click
+  if mouseClick then
+    inputField:EventAttach(mouseClick, function() requestEditorFocus() end, "LuaPad editor click focus")
+    editorFocusStatus:EventAttach(mouseClick, function() requestEditorFocus() end, "LuaPad editor focus button")
+  end
+  local keyFocusEvents = Event.UI.Input.Key and Event.UI.Input.Key.Focus
+  if keyFocusEvents then
+    if keyFocusEvents.Gain then
+      pcall(inputField.EventAttach, inputField, keyFocusEvents.Gain,
+        function() refreshEditorFocusStatus() end, "LuaPad editor focus gained")
+    end
+    if keyFocusEvents.Loss then
+      pcall(inputField.EventAttach, inputField, keyFocusEvents.Loss,
+        function() refreshEditorFocusStatus() end, "LuaPad editor focus lost")
+    end
+  end
+  inputField:EventAttach(Event.UI.Textfield.Change, function()
 		local _, newlineCount = (inputField:GetText() or ""):gsub("\n", "\n")
 		inputField:SetHeight(math.max(16 * (newlineCount + 1), 292))
 	end, "LuaPad editor changed")	
@@ -354,10 +412,17 @@ local function init()
 	closeButton:EventAttach(Event.UI.Input.Mouse.Left.Click, function()
 		inputField:SetKeyFocus(false)
 		luaPadWindow:SetVisible(false)
+    refreshEditorFocusStatus()
 	end, "LuaPad close")		
 	
 	label1:SetPoint("TOPLEFT", luaPadWindow, "TOPLEFT", 30, 86)	
 	label1:SetText("Code Editor")
+  editorFocusStatus:SetPoint("TOPLEFT", luaPadWindow, "TOPLEFT", 375, 86)
+  editorFocusStatus:SetWidth(156)
+  editorFocusStatus:SetHeight(17)
+  editorFocusStatus:SetFontSize(11)
+  editorFocusStatus:SetMouseMasking("full")
+  refreshEditorFocusStatus()
 	label1:SetFontSize(12)
 	label1:SetFontColor(0.73,0.88,0.92,1)
 	
@@ -468,6 +533,7 @@ local function showLuaPad()
 	luaPadWindow:SetTitle(currentTitle())
 	bringLuaPadForward()
 	luaPadWindow:SetVisible(true)
+  refreshEditorFocusStatus()
 end
 
 

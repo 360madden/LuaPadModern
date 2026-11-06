@@ -64,6 +64,7 @@ local function frame(kind, name, parent)
     return self._text
   end
   function obj:SetKeyFocus(value) self._keyfocus = value end
+  function obj:GetKeyFocus() return self._keyfocus == true end
   function obj:SetTitle(value) self._title = value end
   function obj:SetTexture(...) self._texture = { ... } end
   function obj:GetContent() return self end
@@ -106,13 +107,13 @@ Event = { UI = {
   Layout = { Size = "layout-size" },
   Textfield = { Change = "textfield-change" },
 }, System = { Update = { Begin = {} } }, Addon = { SavedVariables = { Save = { Begin = {} }, Load = { End = {} } } } }
-Event.UI.Input.Key = { Down = "key-down" }
+Event.UI.Input.Key = { Down = "key-down", Focus = { Gain = "key-focus-gain", Loss = "key-focus-loss" } }
 Library = { LibSimpleWidgets = {
   Window = function(name, parent) return frame("Window", name, parent) end,
   SetBorder = function(view, ...) view._border = { ... } end,
 }}
 Inspect = { Addon = { Detail = function(name)
-  return { toc = { Version = name == "Inspector" and "1.9.0-preview5" or name == "LuaPad" and "2.0.0-preview20" or "?" } }
+  return { toc = { Version = name == "Inspector" and "1.9.0-preview5" or name == "LuaPad" and "2.0.0-preview21" or "?" } }
 end }}
 local registered = {}
 Command = {
@@ -356,7 +357,7 @@ local lpContext = frames.LuaPadContext
 local lpWindow = frames.LuaPadluaPadWindow
 local lpEditor = frames.LuaPadInputField
 check("LuaPad window centered on current UIParent", lpWindow._point and lpWindow._point[1] == "CENTER" and lpWindow._point[2] == UIParent and lpWindow._point[3] == "CENTER" and lpWindow._point[4] == 0 and lpWindow._point[5] == 0)
-check("LuaPad title includes Joey Delfierro author", lpWindow._title == "LuaPad v2.0.0-preview20 | by Joey Delfierro")
+check("LuaPad title includes Joey Delfierro author", lpWindow._title == "LuaPad v2.0.0-preview21 | by Joey Delfierro")
 check("LuaPad opens immediately on startup without slash", lpWindow:GetVisible() == true)
 check("LuaPad context promoted to topmost strata", lpContext:GetStrata() == "topmost")
 check("LuaPad context outranks another topmost addon", lpContext:GetLayer() > otherTopmost:GetLayer())
@@ -364,6 +365,26 @@ check("LuaPad window outranks 999995 BotFight child", lpWindow:GetLayer() > rack
 check("LuaPad window outranks 999990 API Readiness", lpWindow:GetLayer() > readinessWindow:GetLayer())
 check("LuaPad high layer remains bounded", lpWindow:GetLayer() <= 2000000)
 check("auto-open does not steal editor key focus", lpEditor._keyfocus ~= true)
+local lpFocusBadge = frames.LuaPadEditorFocusStatus
+check("focus badge is visible and labeled", lpFocusBadge ~= nil and lpFocusBadge._text:find("Click to focus", 1, true) ~= nil)
+check("read-only focus API reports not focused at startup", LuaPad.GetEditorFocusStatus() == false)
+lpFocusBadge:Fire("left-click")
+check("explicit badge click acquires actual editor focus", lpEditor:GetKeyFocus() == true)
+check("focus badge confirms read-back state", lpFocusBadge._text:find("Focused", 1, true) ~= nil)
+lpEditor:SetKeyFocus(false)
+lpEditor:Fire("key-focus-loss")
+check("focus loss reports click-to-focus again", lpFocusBadge._text:find("Click to focus", 1, true) ~= nil)
+lpEditor:Fire("left-click")
+check("editor body click acquires real textfield focus", lpEditor:GetKeyFocus() == true)
+check("editor body click confirms read-back state", lpFocusBadge._text:find("Focused", 1, true) ~= nil)
+lpEditor:SetKeyFocus(false)
+lpEditor:Fire("key-focus-loss")
+local savedSetFocus = lpEditor.SetKeyFocus
+lpEditor.SetKeyFocus = function() error("focus refused by client") end
+lpFocusBadge:Fire("left-click")
+check("focus refusal remains non-throwing", lpFocusBadge._text:find("Unavailable", 1, true) ~= nil)
+lpEditor.SetKeyFocus = savedSetFocus
+check("failed focus claim never reports focused", LuaPad.GetEditorFocusStatus() == false)
 check("startup message reports auto-open", table.concat(messages,"\\n"):find("editor opened automatically",1,true) ~= nil)
 check("startup defers final layer check to first frame", #Event.System.Update.Begin == 1)
 local firstFrame = Event.System.Update.Begin[1][1]
@@ -377,15 +398,20 @@ check("first-frame layer check outranks later addon", lpContext:GetLayer() > lat
 check("first-frame layer check outranks later high-layer window", lpWindow:GetLayer() > laterWindow:GetLayer())
 check("first-frame listener detaches after one run", #Event.System.Update.Begin == 0)
 check("first-frame check preserves editor focus", lpEditor._keyfocus ~= true)
+lpFocusBadge:Fire("left-click")
+check("preclose editor focus restored explicitly", lpEditor:GetKeyFocus() == true)
 frames.LuaPadCloseButton:Fire("left-click")
 check("LuaPad close still hides window", lpWindow:GetVisible() == false)
+check("LuaPad close releases editor focus", lpEditor:GetKeyFocus() == false)
+check("closed editor focus API returns hidden state", LuaPad.GetEditorFocusStatus() == nil)
 laterTopmost:SetLayer(lpContext:GetLayer() + 2)
 laterWindow:SetLayer(lpWindow:GetLayer() + 2)
 firstFrame()
 check("first-frame callback never repeats after detaching", lpContext:GetLayer() < laterTopmost:GetLayer())
 registered.lp[1][1]()
 check("/lp reopens hidden LuaPad", lpWindow:GetVisible() == true)
-check("/lp keeps author credit in window title", lpWindow._title == "LuaPad v2.0.0-preview20 | by Joey Delfierro")
+check("/lp does not implicitly capture editor keyboard focus", lpEditor:GetKeyFocus() == false)
+check("/lp keeps author credit in window title", lpWindow._title == "LuaPad v2.0.0-preview21 | by Joey Delfierro")
 check("/lp re-promotes above newly raised addon", lpContext:GetLayer() > laterTopmost:GetLayer())
 check("/lp re-promotes window above later high-layer addon", lpWindow:GetLayer() > laterWindow:GetLayer())
 local lpOutput = frames.LuaPadOutputField
