@@ -1,6 +1,6 @@
 # LuaPad 2.0 Preview 21 — centered startup with explicit editor keyboard focus
 
-**Current checkpoint (2026-11-06):** Preview 21 installed and loaded in physical RIFT. A verified post-/reloadui screenshot shows a centered/front editor titled `LuaPad v2.0.0-preview21 | by Joey Delfierro` and the initial `Editor: Click to focus` indicator. A deliberate badge or editor click now requests textfield key focus and reads back `GetKeyFocus()`; startup and /lp do not steal focus. Source checks: **60 structural / 496 bridge+runtime / 113 host PASS**. The **live click/focus/typing acceptance is still pending**. Details: [Preview 21 focus checkpoint](docs/PREVIEW21-EDITOR-KEYBOARD-FOCUS-2026-11-06.md).
+**Current checkpoint (2026-11-06):** Preview 21 installed and loaded in physical RIFT. A verified post-/reloadui screenshot shows a centered/front editor titled `LuaPad v2.0.0-preview21 | by Joey Delfierro` and the initial `Editor: Click to focus` indicator. A deliberate badge or editor click now requests textfield key focus and reads back `GetKeyFocus()`; startup and /lp do not steal focus. Source checks: **60 structural / 496 bridge+runtime / 113 host PASS**. **Physical click-to-focus PASSED** with a green GetKeyFocus-backed indicator on 2026-11-06; live character/Enter/Tab and focus-loss acceptance remain pending. Details: [Preview 21 focus checkpoint](docs/PREVIEW21-EDITOR-KEYBOARD-FOCUS-2026-11-06.md).
 
 ## AI / Workbridge automation architecture (M1)
 

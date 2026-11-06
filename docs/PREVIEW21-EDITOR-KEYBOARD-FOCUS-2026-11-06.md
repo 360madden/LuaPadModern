@@ -2,7 +2,7 @@
 
 Date: 2026-11-06, America/New_York. Owner: Joey Delfierro.
 Scope: physical RIFT Live x64; independent of VMware lab addons.
-Status: **source/tests PASS; physical installed-byte hot-copy and Joey's /reloadui PASS; centered/initial-unfocused status PASS; click/key-focus acceptance PENDING**.
+Status: **source/tests PASS; physical install, /reloadui, centered/unfocused startup and click-to-focus PASS; typing/focus-loss acceptance PENDING**.
 
 ## User-visible result
 
@@ -40,7 +40,14 @@ Status: **source/tests PASS; physical installed-byte hot-copy and Joey's /reload
 - Screenshot visually confirms `LuaPad v2.0.0-preview21 | by Joey Delfierro`, centered/front over competing panels, with blue `Editor: Click to focus` visible and blank editor/output. **Initial unrequested focus state PASS**.
 - This proves the client loaded Preview 21 and displays an unfocused badge. A green focus transition and actual keyboard text remain **unverified** until someone clicks the badge/editor and returns a fresh capture. The host screenshot alone cannot read the RIFT textfield getter.
 
-## Physical acceptance — pending
+## Physical focus click acceptance — 2026-11-06T07:57:05Z
+
+- Joey deliberately clicked the dark code editor in Preview 21. His supplied screenshot shows a visible caret at the top-left of the empty editor and the status text changed to green `Editor: Focused`.
+- Independent Workbridge physical-RIFT capture of the same running process `rift_x64` PID **32156**, HWND **462734**, verified the green `Editor: Focused` text and unchanged centered/front editor. Request `luapad-preview21-focus-click-post-20261106-01`, 1920×1032, SHA-256 `f1531dba40b079cc8413b6b84fb54dfdca93aaacfef785d428375929cda1b0b0`, 07:57:05.774Z. Workbridge injected **no keyboard/mouse input**.
+- The green status is reached only when the Live addon queries `RiftTextfield:GetKeyFocus()` and observes `true`. This is **live addon-side focus PASS**; it is not independent host proof that the Windows RIFT window is foreground, nor does a screenshot prove text keys were delivered.
+- Follow-up: enter harmless text + Enter/Tab, check loss transition, and independently verify fresh host foreground/bounds at the instant of any future automated input.
+
+## Remaining physical acceptance — pending
 
 1. If there is unsaved code in LuaPad, save it first. Execute a normal user `/reloadui` in physical RIFT. Avoid clearing or reusing Workbridge's already-consumed reload singleton; its prior receipt is durable and must not be reset as a workaround.
 2. Capture exact physical PID/HWND and screenshot. Check `v2.0.0-preview21`, auto-centered/front window and **unfocused** badge state.
