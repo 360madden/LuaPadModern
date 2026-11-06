@@ -1,7 +1,7 @@
 # LuaPadModern Preview 20 — center anchoring, Joey author credit, and outbound bridge research
 
 Date: 2026-11-04. Physical host: RIFT Live x64. Repo: `C:\work\LuaPadModern`.
-Status: **source/headless checks PASS; guarded physical AddOns copy PASS; physical Preview 20 auto-open, centering, title and front-order PASS on 2026-11-05 authorized `/reloadui`; keyboard focus and Close/`/lp` reopening still pending**.
+Status: **source/headless checks PASS; guarded physical AddOns copy PASS; physical Preview 20 auto-open, centering, title and front-order PASS on 2026-11-05 authorized `/reloadui`; keyboard focus pending; deliberate Close/`/lp` reopen PASS on 2026-11-06**.
 
 ## User observation and scope
 
@@ -80,6 +80,10 @@ Screenshot receipt: `C:\work\workbridge-mcp\.tools\desktop-evidence\capture-phys
 | Preview version and author title | **PASS** | `LuaPad v2.0.0-preview20 | by Joey Delfierro` legible |
 | Front order over competing addons | **PASS at capture time** | LuaPad overlays `RR2 CAST` and `RiftReader API Readiness` |
 | Native dialog/editor keyboard-focus behavior | **PENDING** | Cannot be established from screenshot |
-| Deliberate Close followed by `/lp` reopen/front restore | **PENDING** | Requires separate interaction |
+| Deliberate Close followed by `/lp` reopen/front restore | **PASS 2026-11-06** | Guarded single `/lp` input; independent centered/front screenshot below |
 
 No additional `/reloadui`, game restart, active-addon deployment or GUI input was performed for this documentation review. A later screenshot with LuaPad absent does not establish a startup failure: the window may have been deliberately closed.
+
+## Follow-up live acceptance (2026-11-06 00:22 EST)
+
+Joey deliberately clicked the LuaPad Close control. A verified physical RIFT capture at 05:21:52.831Z, request `luapad_lp_closed_pre_20261106_005`, SHA256 `7b4a7a2a15e307c8bf9dec88c5d65824d396350bceef72ef5bb08d750c353749`, showed the editor absent, native chat closed, and no competing input modal. Workbridge's one-shot `physical-rift-luapad-open.mjs` then submitted exactly `Enter`, `/lp`, `Enter` once. The independent 05:22:36.482Z screenshot, request `luapad_lp_reopen_post_20261106_001`, SHA256 `50d8232d83d1745e2e80b4e1c6ab263b815377b38808d536e726ea9fcfb3bef9`, shows Preview 20 reopened centered (approximately x=552–1369, y=243–815 on 1920×1032), visually above RR2 CAST and RiftReader API Readiness, with correct version and Joey author title. **Close/`/lp` reopen/front restore PASS**. The first action attempt was rejected as stale (`CHAT_STATE_UNVERIFIED`, `inputSubmitted:false`), so no duplicate input was sent. Neither `/reloadui` nor game restart was needed. Editor native key-focus remains untested.
