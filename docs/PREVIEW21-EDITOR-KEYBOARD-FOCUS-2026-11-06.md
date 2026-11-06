@@ -2,7 +2,7 @@
 
 Date: 2026-11-06, America/New_York. Owner: Joey Delfierro.
 Scope: physical RIFT Live x64; independent of VMware lab addons.
-Status: **source/tests PASS; physical startup, click-to-focus and typed-character/Enter/Tab acceptance PASS; focus-loss acceptance PENDING**.
+Status: **all Preview 21 editor focus/typing/focus-loss physical acceptance PASS; Windows-host autonomous input readiness remains separate and unverified**.
 
 ## User-visible result
 
@@ -52,14 +52,26 @@ Status: **source/tests PASS; physical startup, click-to-focus and typed-characte
 - Following a user click in the editor, Joey manually typed the short A/Enter/B/Tab/C marker. RIFT's rendered text appears in lowercase as two lines, `a` and `b  c`, with a visible two-space indentation before `c`. This verifies the newline and Tab-to-spaces insertion behavior visually; case of the test characters differs from the suggested uppercase sequence, without changing the focus/spacing conclusion.
 - Independent Workbridge capture of the exact physical process `rift_x64` PID 32156, HWND 462734: request `luapad-preview21-keys-abc-post-20261106-01`, 1920×1032, captured 08:02:12.789Z, SHA-256 `af75ad919da0c5d6eac831e2fbe424479f04d81112e707baf3729295bdeafe9b`, `inputInjected:false`. LuaPad still displays green `Editor: Focused`.
 - **Live PASS** for regular character entry, Enter/newline, Tab/spaces, and retained editor focus across those keys. The screenshot proves visible layout, but exact bytes of the spaces were not read through an in-game API.
-- Remaining: click a different RIFT control to establish focus-loss indicator behavior; clear the unsaved marker (no Run/Save was performed); Windows host input readiness remains a separate gate.
+- Subsequent focus-loss test also passed (see next section). Marker remains unsaved and can be removed using the editor's normal selection/delete controls.
 
-## Remaining physical acceptance — pending
+## Physical focus-loss acceptance — 2026-11-06T08:06:10Z
 
-1. If there is unsaved code in LuaPad, save it first. Execute a normal user `/reloadui` in physical RIFT. Avoid clearing or reusing Workbridge's already-consumed reload singleton; its prior receipt is durable and must not be reset as a workaround.
-2. Capture exact physical PID/HWND and screenshot. Check `v2.0.0-preview21`, auto-centered/front window and **unfocused** badge state.
-3. With the correct RIFT window foreground, click `Editor: Click to focus` once; confirm the badge turns `Editor: Focused` and record screenshot/time/hash. Separately confirm read-only `LuaPad.GetEditorFocusStatus()` if the in-game console is accessible. The badge alone is not Windows host readiness.
-4. Click editor body, enter a short harmless marker, Enter and Tab. Confirm actual editor text and caret semantics; do not select Save or Run. Clear the marker without overwriting any existing snippet.
-5. Click another RIFT control to check focus-loss transition and close/reopen via /lp to check no stolen keyboard focus. Re-check visible focus status. Stop on a mismatched version, modal/overlap, stale geometry or unexpected active game controls.
+- Joey deliberately clicked outside LuaPad in the physical RIFT game world. His screenshot shows the status returned from green `Editor: Focused` to blue `Editor: Click to focus`; the two-line `a` and `b  c` marker remains intact and unsaved.
+- Independently captured the exact running RIFT process, PID 32156 / HWND 462734, 1920×1032 at 08:06:10.390Z. Request `luapad-preview21-focus-loss-post-20261106-01`, SHA-256 `aa92e409658e70d1445c222b9720a8223747794d2f8da73ff79a9d66543ddff8`, `inputInjected:false`. The indicator is visibly blue `Editor: Click to focus`, and LuaPad remains centered and above other addons.
+- **Live PASS:** RIFT native key-focus loss is reflected in the status indicator while editor text is preserved. The prior green state was established through the Live addon `GetKeyFocus()` getter.
+- Remaining independent work: host-side exact HWND/foreground + occlusion + runtime focus cross-correlation before automated input. No generic automated input capability is claimed.
 
-**No generic desktop automation or live keyboard-input readiness is claimed until these receipts pass.**
+## Physical acceptance checklist and remaining host work
+
+- [x] Physical `/reloadui` loads Preview 21 while preserving the RIFT process.
+- [x] Centered, unobscured startup and initial blue non-focused indicator.
+- [x] Clicking editor turns indicator green; `GetKeyFocus()`-backed state.
+- [x] Regular characters, Enter and Tab visually work in Live.
+- [x] Clicking outside returns the indicator to blue without changing editor text.
+- [x] Prior close then `/lp` reopen/front-order acceptance was verified on Preview 20; Preview 21 preserves the path in mock tests.
+- [ ] Read-only runtime focus state bridged to Windows host with independent receipt.
+- [ ] Fresh Windows foreground, PID/start/HWND/session, geometry and screenshot occlusion jointly verified at actual input time.
+- [ ] Host-controlled safe editor text input after full readiness gates; no generic input capability claimed.
+- [ ] Clear the temporary unsaved `a` / `b  c` marker when convenient.
+
+**Scope boundary:** Native addon keyboard focus is now verified. This does not, by itself, authorize the Windows host to send arbitrary keys or establish generic automation readiness.
