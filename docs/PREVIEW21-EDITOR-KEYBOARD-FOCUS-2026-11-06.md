@@ -2,7 +2,7 @@
 
 Date: 2026-11-06, America/New_York. Owner: Joey Delfierro.
 Scope: physical RIFT Live x64; independent of VMware lab addons.
-Status: **source/tests PASS; physical install, /reloadui, centered/unfocused startup and click-to-focus PASS; typing/focus-loss acceptance PENDING**.
+Status: **source/tests PASS; physical startup, click-to-focus and typed-character/Enter/Tab acceptance PASS; focus-loss acceptance PENDING**.
 
 ## User-visible result
 
@@ -46,6 +46,13 @@ Status: **source/tests PASS; physical install, /reloadui, centered/unfocused sta
 - Independent Workbridge physical-RIFT capture of the same running process `rift_x64` PID **32156**, HWND **462734**, verified the green `Editor: Focused` text and unchanged centered/front editor. Request `luapad-preview21-focus-click-post-20261106-01`, 1920×1032, SHA-256 `f1531dba40b079cc8413b6b84fb54dfdca93aaacfef785d428375929cda1b0b0`, 07:57:05.774Z. Workbridge injected **no keyboard/mouse input**.
 - The green status is reached only when the Live addon queries `RiftTextfield:GetKeyFocus()` and observes `true`. This is **live addon-side focus PASS**; it is not independent host proof that the Windows RIFT window is foreground, nor does a screenshot prove text keys were delivered.
 - Follow-up: enter harmless text + Enter/Tab, check loss transition, and independently verify fresh host foreground/bounds at the instant of any future automated input.
+
+## Physical text entry acceptance — 2026-11-06T08:02:12Z
+
+- Following a user click in the editor, Joey manually typed the short A/Enter/B/Tab/C marker. RIFT's rendered text appears in lowercase as two lines, `a` and `b  c`, with a visible two-space indentation before `c`. This verifies the newline and Tab-to-spaces insertion behavior visually; case of the test characters differs from the suggested uppercase sequence, without changing the focus/spacing conclusion.
+- Independent Workbridge capture of the exact physical process `rift_x64` PID 32156, HWND 462734: request `luapad-preview21-keys-abc-post-20261106-01`, 1920×1032, captured 08:02:12.789Z, SHA-256 `af75ad919da0c5d6eac831e2fbe424479f04d81112e707baf3729295bdeafe9b`, `inputInjected:false`. LuaPad still displays green `Editor: Focused`.
+- **Live PASS** for regular character entry, Enter/newline, Tab/spaces, and retained editor focus across those keys. The screenshot proves visible layout, but exact bytes of the spaces were not read through an in-game API.
+- Remaining: click a different RIFT control to establish focus-loss indicator behavior; clear the unsaved marker (no Run/Save was performed); Windows host input readiness remains a separate gate.
 
 ## Remaining physical acceptance — pending
 
