@@ -1,7 +1,7 @@
 # LuaPadModern Preview 20 — center anchoring, Joey author credit, and outbound bridge research
 
 Date: 2026-11-04. Physical host: RIFT Live x64. Repo: `C:\work\LuaPadModern`.
-Status: **source/headless checks PASS; guarded physical AddOns copy PASS; in-game Preview 20 UI acceptance PENDING a separate user-authorized `/reloadui` or normal relaunch**.
+Status: **source/headless checks PASS; guarded physical AddOns copy PASS; physical Preview 20 auto-open, centering, title and front-order PASS on 2026-11-05 authorized `/reloadui`; keyboard focus and Close/`/lp` reopening still pending**.
 
 ## User observation and scope
 
@@ -67,11 +67,19 @@ The `deploy-preview20.ps1` script first dry-runs and checks exact Preview 19 ins
 - Live RIFT log tail watcher project: https://github.com/Bamux/RiftEventTracker
 - RIFT combat/event log watcher: https://github.com/Bamux/Rift-Raid-Alert
 
-## Physical acceptance (pending)
+## Physical acceptance (2026-11-05 live startup PASS; interaction checks pending)
 
-On Joey's separately authorized `/reloadui` or next game launch:
+The physical RIFT `rift_x64` PID 32156, HWND 462734 received an independently guarded, Joey-authorized `/reloadui` on 2026-11-05 at 17:21 EST (22:21 UTC), with no game or Windows restart. The fixed input sequence contained no `/lp` command. A fresh post-reload screenshot at 17:21:20 EST shows LuaPad open in front.
 
-1. Confirm title **`LuaPad v2.0.0-preview20 | by Joey Delfierro`**.
-2. Confirm editor opens **centered** on the current RIFT UI/screen without `/lp`.
-3. Confirm editor remains visually **above competing addons**, including `RR2 CAST` and `RiftReader API Readiness`, and does not steal native dialog inputs.
-4. Verify `/lp` reopens and restores title/front order after a deliberate Close; don't assume editor keyboard focus without a direct check.
+Screenshot receipt: `C:\work\workbridge-mcp\.tools\desktop-evidence\capture-physical_rift_reloadui_postcheck_20261105a.png`; 1920 × 1032 pixels; SHA256 `ca6bc136f6fda5198d6d392340632953e9d6684ad380f50c4010c46e2a1dda41`. The artifact was replayed and hash-verified during the LuaPadModern review on November 5; it was not a new UI reload. Original guarded reload/postcondition report: `workbridge-mcp/investigations/windows-desktop-automation/reports/2026-11-05-physical-rift-reloadui-v0411-success.md`.
+
+| Physical gate | Outcome | Evidence/limit |
+| --- | --- | --- |
+| Auto-open after UI reload | **PASS** | LuaPad visible 20 seconds after reload; no `/lp` sent |
+| Centered placement | **PASS** | Window visually centered in RIFT client content area in 1920 × 1032 capture |
+| Preview version and author title | **PASS** | `LuaPad v2.0.0-preview20 | by Joey Delfierro` legible |
+| Front order over competing addons | **PASS at capture time** | LuaPad overlays `RR2 CAST` and `RiftReader API Readiness` |
+| Native dialog/editor keyboard-focus behavior | **PENDING** | Cannot be established from screenshot |
+| Deliberate Close followed by `/lp` reopen/front restore | **PENDING** | Requires separate interaction |
+
+No additional `/reloadui`, game restart, active-addon deployment or GUI input was performed for this documentation review. A later screenshot with LuaPad absent does not establish a startup failure: the window may have been deliberately closed.
