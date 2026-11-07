@@ -1,25 +1,67 @@
-# LuaPadModern
+<div align="center">
 
-**A modern in-game Lua editor, Inspector, and developer toolkit for RIFT — with an evolving, test-driven Windows automation bridge.**
+<img src="docs/assets/luapadmodern-hero.svg" alt="LuaPadModern — your RIFT Lua development studio by 360madden" width="100%" />
 
-[![Status](https://img.shields.io/badge/status-active%20preview-blue)](docs/PREVIEW21-EDITOR-KEYBOARD-FOCUS-2026-11-06.md) [![Version](https://img.shields.io/badge/version-2.0.0--preview21-5865f2)](RiftAddon.toc) [![Platform](https://img.shields.io/badge/platform-RIFT%20Live%20x64-2ea44f)](https://www.trionworlds.com/rift/) [![Language](https://img.shields.io/badge/addon-Lua%205.1-4b8bbe)](main.lua) [![Host](https://img.shields.io/badge/host-.NET%2010%20prototype-512bd4)](HostCore/)
+# ✨ LuaPadModern
 
-> **Preview software.** The editor is usable in the physical RIFT client; the proposed AI/Workbridge end-to-end transport and autonomous Windows input are **not** complete. Features and tests below explicitly distinguish live verification from source-only prototypes.
+### Write Lua. Run it in RIFT. Inspect everything you can prove.
 
-## At a glance
+**A polished in-game Lua editor, diagnostic workbench, and emerging AI-assisted developer bridge for the RIFT MMORPG.**
 
-| Area | Current state |
-| --- | --- |
-| In-game editor and Run | ✅ Implemented; native typing, Enter, Tab, and focus transitions physically verified |
-| Startup, window layering, title | ✅ Centered/front in physical RIFT; auto-opens; author/version visible |
-| Snippets, output, Inspector, clipboard | ✅ Implemented; check individual acceptance items for live coverage |
-| Bridge JSON codec, router and `/lpb` pilot | 🧪 Source-only, tested; **not registered in RIFT** |
-| Node log watcher and .NET 10 host core | 🧪 Source-only/synthetic tests; no verified live log transport |
-| Win32 desktop input / MCP automation | 🚧 Planned; no end-to-end live bridge or general input guarantee |
+[![Version](https://img.shields.io/badge/VERSION-2.0.0--preview21-7c3aed?style=for-the-badge)](RiftAddon.toc)
+[![RIFT](https://img.shields.io/badge/GAME-RIFT%20Live-087e8b?style=for-the-badge)](main.lua)
+[![Lua](https://img.shields.io/badge/LUA-5.1-2c2d72?style=for-the-badge&logo=lua&logoColor=white)](main.lua)
+[![Windows](https://img.shields.io/badge/HOST-Windows%2011-0078d4?style=for-the-badge&logo=windows11&logoColor=white)](HostCore/)
+[![.NET](https://img.shields.io/badge/HOST%20CORE-.NET%2010-512bd4?style=for-the-badge&logo=dotnet&logoColor=white)](HostCore/)
 
-**Latest verified checkpoint:** November 6, 2026 — `2.0.0-preview21`. Live RIFT evidence confirms clicking the editor requests focus, the indicator changes to **Editor: Focused**, ordinary characters and Enter/Tab work, and clicking outside changes it back to **Editor: Click to focus** without erasing the draft. See [Preview 21 acceptance evidence](docs/PREVIEW21-EDITOR-KEYBOARD-FOCUS-2026-11-06.md).
+![Live](https://img.shields.io/badge/EDITOR-Live%20verified-16a34a?style=flat-square)
+![Bridge](https://img.shields.io/badge/BRIDGE-Source%20prototype-f59e0b?style=flat-square)
+![Tests](https://img.shields.io/badge/TESTS-Recorded%20passes-0284c7?style=flat-square)
+![Maintainer](https://img.shields.io/badge/MAINTAINER-360madden-db2777?style=flat-square)
 
-## Why LuaPadModern?
+[🚀 Quick start](#-quick-start-in-rift) · [🎛️ Features](#-feature-showcase) · [🧠 Architecture](#-architecture-and-automation-roadmap) · [🧪 Testing](#-testing-and-verification) · [📚 Docs](#-documentation-index)
+
+**🧑‍💻 Created and maintained by Joey Delfierro · 360madden**
+
+</div>
+
+---
+
+> [!IMPORTANT]
+> **Preview 21 is a working in-game editor, not a completed remote-control product.** Physical RIFT testing verified editor focus, typing, Enter/Tab, window positioning, and focus loss. The AI/Workbridge bridge, log transport, and autonomous Windows input still require separate integration and live acceptance.
+
+## 🌟 Feature showcase
+
+<table>
+<tr>
+<td width="33%" align="center"><strong>📝 EDIT & RUN</strong><br/><sub>Multiline Lua editing, protected execution, printed output, and meaningful errors.</sub></td>
+<td width="33%" align="center"><strong>🔍 INSPECT</strong><br/><sub>Bounded inspection tools for exploring Lua values and RIFT APIs.</sub></td>
+<td width="33%" align="center"><strong>🎯 STAY IN CONTROL</strong><br/><sub>Explicit keyboard focus, centered startup, and window layering.</sub></td>
+</tr>
+<tr>
+<td width="33%" align="center"><strong>💾 SAVE SNIPPETS</strong><br/><sub>Account-scoped snippet persistence through RIFT SavedVariables.</sub></td>
+<td width="33%" align="center"><strong>📋 COPY DIAGNOSTICS</strong><br/><sub>Clipboard export and bounded display for long error messages.</sub></td>
+<td width="33%" align="center"><strong>🧪 DEVELOP SAFELY</strong><br/><sub>Headless regression suites plus individually tracked live-game acceptance.</sub></td>
+</tr>
+</table>
+
+## 📊 Capability dashboard
+
+<sub>🟢 Verified in the stated scope · 🔵 Implemented or source-tested · 🟡 Active investigation · ⚪ Planned / unavailable</sub>
+
+| Capability | Status | Evidence and scope |
+| :--- | :---: | :--- |
+| 🎹 Typing, Enter, Tab, explicit editor focus | 🟢 **LIVE PASS** | Physical RIFT Preview 21, November 6, 2026 |
+| 🪟 Centered startup and front-of-addon stacking | 🟢 **LIVE PASS** | Physical Preview 20/21 acceptance |
+| ▶️ Lua Run, snippets, Inspector, clipboard | 🔵 **IMPLEMENTED** | Mock/source and historical feature coverage; per-action live checks vary |
+| 📦 JSON bridge codec, read-only router, slash pilot | 🔵 **TESTED SOURCE** | 496 combined bridge/runtime assertions; not registered in RIFT |
+| 🛰️ Log tail and .NET host validator | 🔵 **TESTED SOURCE** | Synthetic host and file probes; no live transport claim |
+| 🤖 End-to-end Workbridge/MCP Lua automation | ⚪ **NOT LIVE** | Windows UI/input and transport gates remain open |
+
+> [!TIP]
+> **Start with the in-game editor.** The automation architecture is an active engineering track. The [dated acceptance notes](docs/PREVIEW21-EDITOR-KEYBOARD-FOCUS-2026-11-06.md) distinguish what was observed in physical RIFT from what only passed a simulator.
+
+## 💡 Why LuaPadModern?
 
 The original LuaPad is a useful in-game Lua scratchpad. LuaPadModern builds on that foundation for current RIFT UI use, safer diagnostics, predictable keyboard behavior, and repeatable engineering tests. It keeps the editor directly usable by a person while exploring a separately gated automation path for AI-assisted development.
 
@@ -31,11 +73,11 @@ The original LuaPad is a useful in-game Lua scratchpad. LuaPadModern builds on t
 - **Copy diagnostics.** Output can be copied to the system clipboard, including full errors when the visible pane is shortened.
 - **Build with regression coverage.** Lua runtime mocks, static checks, Node transport probes, and .NET host validation keep failure modes reproducible.
 
-## Screenshots
+## 🖼️ Screenshots and live evidence
 
 Live visual captures, including hashes and acceptance steps, are documented in the [Preview 21 checkpoint](docs/PREVIEW21-EDITOR-KEYBOARD-FOCUS-2026-11-06.md). Screenshot assets are **not** committed to this repository; this section deliberately avoids placeholder images that could be mistaken for current UI.
 
-## Requirements
+## 🧰 Requirements
 
 ### To use the addon
 
@@ -51,7 +93,7 @@ Live visual captures, including hashes and acceptance steps, are documented in t
 - PowerShell for installation and preview deployment helpers.
 - A physical RIFT client is required for genuine in-game verification; mocked tests cannot replace it.
 
-## Install the addon
+## 📦 Install the addon
 
 1. **Exit RIFT normally** before a first installation. Back up any existing LuaPad addon and SavedVariables.
 2. Download or clone this repository:
@@ -84,7 +126,7 @@ Live visual captures, including hashes and acceptance steps, are documented in t
 
 > **Installer caution:** `install-preview.ps1` contains the original developer machine's absolute AddOns path. **Review and edit `$addonsRoot` before running it on another PC.** It requires RIFT to be closed, backs up the prior addon and available SavedVariables, and performs a guarded installation. `deploy-preview*.ps1` scripts are historical, machine-specific hot-copy workflows; do not execute them as a generic installer.
 
-## Quick start in RIFT
+## 🚀 Quick start in RIFT
 
 1. Open LuaPad (it auto-opens or use `/lp`).
 2. Click inside the code editor. Confirm the status changes to **Editor: Focused**.
@@ -113,7 +155,7 @@ Live visual captures, including hashes and acceptance steps, are documented in t
 
 The focus indicator reflects addon-side RIFT state. It is **not** proof that an external Windows automation host has independently verified the game foreground window, PID/HWND, geometry, and occlusion.
 
-## Feature details
+## 🎛️ Feature details
 
 ### Editor and execution
 
@@ -131,7 +173,7 @@ The bundled Inspector supports constrained expression evaluation and bounded tab
 
 RIFT addons operate under the game's own capability and event model. A Lua addon does not automatically have generic Windows filesystem, socket, or HTTP access. The [sandbox and security research](docs/RIFT-ADDON-SANDBOX-SECURITY-2026-11-06.md) distinguishes supported RIFT APIs from unverified host-side assumptions.
 
-## Architecture and automation roadmap
+## 🧠 Architecture and automation roadmap
 
 ```mermaid
 flowchart TD
@@ -160,7 +202,7 @@ Bridge envelopes use a versioned `luapad-bridge` protocol with `requestId`, `ses
 
 Read the [architecture](docs/AUTOMATION-ARCHITECTURE.md), [M0–M7 roadmap](docs/AUTOMATION-ROADMAP.md), [focus gate](docs/UI-FOCUS-AUTOMATION-GATE-2026-11-04.md), and [bridge schema](contracts/bridge-envelope-v1.schema.json).
 
-## Testing and verification
+## 🧪 Testing and verification
 
 From the repository root in **PowerShell**:
 
@@ -192,7 +234,7 @@ The strict bridge runner invokes `npm exec --yes --package=fengari-node-cli`; an
 
 These are **historical recorded passes**, not continuously updated CI badges. Run the commands on your machine for fresh evidence. Physical acceptance is tracked separately in the [Preview 21 report](docs/PREVIEW21-EDITOR-KEYBOARD-FOCUS-2026-11-06.md) and [test plan](TEST-PLAN.md).
 
-## Current limitations
+## 🚧 Current limitations
 
 - The automation bridge codec/router/slash pilot is not installed or registered in the active RIFT addon.
 - There is no released Windows desktop dashboard, generalized input controller, or live MCP tool for arbitrary Lua execution.
@@ -201,7 +243,7 @@ These are **historical recorded passes**, not continuously updated CI badges. Ru
 - Installation scripts include developer-specific paths; use the manual method or adapt them carefully.
 - A public release/license decision is separate from GitHub visibility. No new license is asserted here.
 
-## Project layout
+## 🗂️ Project layout
 
 ```text
 LuaPadModern/
@@ -223,7 +265,7 @@ LuaPadModern/
 
 `backups/` and generated build folders are deliberately ignored by Git.
 
-## Documentation index
+## 📚 Documentation index
 
 - [Development history and detailed preview change log](docs/DEVELOPMENT-HISTORY.md) — the original long-form README retained intact.
 - [Preview 21 editor focus: live evidence](docs/PREVIEW21-EDITOR-KEYBOARD-FOCUS-2026-11-06.md)
@@ -233,7 +275,7 @@ LuaPadModern/
 - [M3 host core](docs/M3-HOST-CORE-CHECKPOINT-2026-11-04.md) and [noncombat log tail](docs/M3-NONCOMBAT-LOG-TAIL-CHECKPOINT-2026-11-04.md)
 - [Original and preview deployment notes](DEPLOYMENT-2026-11-03.md)
 
-## Maintainers and attribution
+## 🤝 Maintainers and attribution
 
 **LuaPadModern:** Joey Delfierro (`360madden`). Based on **LuaPad 1.8 by NerfedWar**; the original upstream attribution remains in source and addon metadata. The repository also contains Inspector and LibSimpleWidgets components with their own provenance. Contributions and bug reports can be filed through [GitHub Issues](https://github.com/360madden/LuaPadModern/issues); include the preview version, RIFT client build, steps to reproduce, observed/expected behavior, and any safely shareable diagnostic output.
 

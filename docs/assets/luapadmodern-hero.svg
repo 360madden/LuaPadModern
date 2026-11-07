@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="470" viewBox="0 0 1400 470" role="img" aria-labelledby="title desc">
+<title id="title">LuaPadModern — RIFT Lua development studio by 360madden</title>
+<desc id="desc">Deep navy developer workspace banner featuring a simulated Lua editor, cyan and violet accents, and 360madden branding.</desc>
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#08111f"/><stop offset=".53" stop-color="#101a35"/><stop offset="1" stop-color="#18234a"/></linearGradient>
+  <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#5ce5e9"/><stop offset=".52" stop-color="#8ba6ff"/><stop offset="1" stop-color="#db83ff"/></linearGradient>
+  <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#172641"/><stop offset="1" stop-color="#10182f"/></linearGradient>
+  <linearGradient id="green" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#23e1b0"/><stop offset="1" stop-color="#52dab3"/></linearGradient>
+  <filter id="glow"><feGaussianBlur stdDeviation="46"/></filter>
+  <filter id="shadow" x="-25%" y="-35%" width="150%" height="175%"><feDropShadow dx="0" dy="18" stdDeviation="23" flood-color="#030816" flood-opacity=".65"/></filter>
+  <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#91a6da" stroke-opacity=".055"/></pattern>
+</defs>
+<rect width="1400" height="470" rx="24" fill="url(#bg)"/>
+<circle cx="1200" cy="90" r="200" fill="#6c56f9" opacity=".25" filter="url(#glow)"/>
+<circle cx="580" cy="480" r="220" fill="#07b7ca" opacity=".16" filter="url(#glow)"/>
+<rect width="1400" height="470" rx="24" fill="url(#grid)"/>
+<path d="M0 442H1400" stroke="url(#accent)" stroke-width="5"/>
+<g font-family="Segoe UI,Inter,Arial,sans-serif">
+  <rect x="68" y="48" width="176" height="36" rx="18" fill="#19384c" stroke="#2fc6c9" stroke-opacity=".65"/>
+  <circle cx="87" cy="66" r="5" fill="#36e5bf"/>
+  <text x="103" y="72" fill="#b6f7f4" font-size="16" font-weight="700" letter-spacing="1.5">RIFT ADDON</text>
+  <text x="65" y="163" font-size="76" font-weight="800" fill="#fff" letter-spacing="-3">LuaPad<tspan fill="#78e8ef">Modern</tspan></text>
+  <rect x="68" y="185" width="435" height="5" rx="2.5" fill="url(#accent)"/>
+  <text x="68" y="238" fill="#c6d6f4" font-size="26" font-weight="500">Your in-game Lua development studio.</text>
+  <text x="69" y="279" fill="#8da4c9" font-size="19">Edit · Execute · Inspect · Automate</text>
+  <g transform="translate(67 319)">
+    <rect width="162" height="42" rx="10" fill="#173e47" stroke="#1f9e91"/>
+    <text x="81" y="27" text-anchor="middle" fill="#72e8c3" font-size="16" font-weight="700">EDITOR READY</text>
+    <rect x="175" width="152" height="42" rx="10" fill="#252c59" stroke="#6674d7"/>
+    <text x="251" y="27" text-anchor="middle" fill="#b6b9ff" font-size="16" font-weight="700">PREVIEW 21</text>
+    <rect x="340" width="151" height="42" rx="10" fill="#30264d" stroke="#8954b6"/>
+    <text x="416" y="27" text-anchor="middle" fill="#e0adff" font-size="16" font-weight="700">LUA 5.1</text>
+  </g>
+  <text x="69" y="415" font-size="17" fill="#a8b9d7">Crafted by <tspan fill="#f5f7ff" font-weight="800">360madden</tspan> · Joey Delfierro</text>
+</g>
+<g transform="translate(706 42)" filter="url(#shadow)">
+  <rect x="0" y="0" width="637" height="359" rx="18" fill="url(#panel)" stroke="#51618c" stroke-width="1.5"/>
+  <path d="M18 0H619Q637 0 637 18V52H0V18Q0 0 18 0Z" fill="#1d2c4b"/>
+  <circle cx="26" cy="27" r="6" fill="#ff7188"/><circle cx="48" cy="27" r="6" fill="#ffc36c"/><circle cx="70" cy="27" r="6" fill="#4de2bc"/>
+  <text x="105" y="33" fill="#e8efff" font-family="Segoe UI,Arial,sans-serif" font-size="18" font-weight="700">LuaPad v2.0.0-preview21</text>
+  <text x="612" y="33" fill="#8ecdcf" font-family="Segoe UI,Arial,sans-serif" font-size="13" text-anchor="end">by Joey</text>
+  <rect x="20" y="71" width="597" height="196" rx="9" fill="#0a1527" stroke="#263f65"/>
+  <g font-family="Consolas,Cascadia Code,monospace" font-size="19">
+    <g fill="#5b769e" text-anchor="end"><text x="49" y="109">01</text><text x="49" y="141">02</text><text x="49" y="173">03</text><text x="49" y="205">04</text><text x="49" y="237">05</text></g>
+    <text x="70" y="109"><tspan fill="#c48cfa">local</tspan><tspan fill="#d7e6fd"> app = </tspan><tspan fill="#75e0d3">"LuaPadModern"</tspan></text>
+    <text x="70" y="141"><tspan fill="#c48cfa">local</tspan><tspan fill="#d7e6fd"> status = </tspan><tspan fill="#7ee4bb">"ready"</tspan></text>
+    <text x="70" y="173" fill="#607fa9">-- Build. Test. Discover.</text>
+    <text x="70" y="205"><tspan fill="#81bfff">print</tspan><tspan fill="#d7e6fd">(</tspan><tspan fill="#f3bd7d">"Hello, RIFT!"</tspan><tspan fill="#d7e6fd">)</tspan></text>
+    <text x="70" y="237" fill="#d7e6fd">inspect(app, status)<tspan fill="#79e9e9">▌</tspan></text>
+  </g>
+  <g font-family="Segoe UI,Arial,sans-serif">
+    <rect x="21" y="283" width="112" height="45" rx="9" fill="#235b67" stroke="#4cbbbf"/>
+    <text x="77" y="311" text-anchor="middle" font-size="16" font-weight="800" fill="#c5ffff">▶ RUN</text>
+    <rect x="147" y="283" width="112" height="45" rx="9" fill="#2e3861" stroke="#5c78bd"/>
+    <text x="203" y="311" text-anchor="middle" font-size="16" font-weight="700" fill="#d0ddff">SAVE</text>
+    <rect x="273" y="283" width="116" height="45" rx="9" fill="#2e3861" stroke="#5c78bd"/>
+    <text x="331" y="311" text-anchor="middle" font-size="16" font-weight="700" fill="#d0ddff">INSPECT</text>
+    <rect x="408" y="283" width="210" height="45" rx="9" fill="#173d3d" stroke="#2fae89"/>
+    <circle cx="426" cy="305" r="5" fill="#52e7ab"/>
+    <text x="446" y="311" font-size="15" font-weight="700" fill="#90ecc3">EDITOR FOCUSED</text>
+    <text x="24" y="348" font-size="12" fill="#7d90b4">RIFT addon interface · illustrative concept, not an in-game screenshot</text>
+  </g>
+</g>
+</svg>
